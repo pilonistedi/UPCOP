@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin · Reports</title>
+    <link rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='favicon.ico') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/static/output.css" />
+  </head>
+
+  <body class="bg-neutral-950 text-neutral-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-neutral-900 border-b border-neutral-800">
+      <div
+        class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between"
+      >
+        <span class="text-sm font-semibold">Admin · Reports</span>
+        <a
+          href="{{ url_for('admin_dashboard') }}"
+          class="text-sm text-neutral-400 hover:text-neutral-200"
+        >
+          Back
+        </a>
+      </div>
+    </header>
+
+    <!-- Main -->
+    <main class="max-w-6xl mx-auto px-4 py-8">
+      <div class="overflow-x-auto border border-neutral-800 rounded-lg">
+        <table class="w-full text-sm border-collapse">
+          <!-- HEADER -->
+          <thead class="bg-neutral-900">
+            <tr class="border-b border-neutral-800 text-left text-neutral-400">
+              <th class="px-3 py-2">ID</th>
+              <th class="px-3 py-2">Type</th>
+              <th class="px-3 py-2">Reason</th>
+              <th class="px-3 py-2">Reported By</th>
+              <th class="px-3 py-2">Target</th>
+              <th class="px-3 py-2">Date</th>
+              <th class="px-3 py-2">Status</th>
+              <th class="px-3 py-2">Action</th>
+            </tr>
+          </thead>
+
+          <!-- BODY -->
+          <tbody>
+            {% for item in enriched_reports %}
+
+            <tr class="border-b border-neutral-800 hover:bg-neutral-800">
+              <!-- ID -->
+              <td class="px-3 py-2">{{ item.report.id }}</td>
+
+              <!-- Type -->
+              <td class="px-3 py-2 text-yellow-400">
+                {{ item.report.target_type }}
+              </td>
+
+              <!-- Reason -->
+              <td class="px-3 py-2">{{ item.report.reason }}</td>
+
+              <!-- Reporter -->
+              <td class="px-3 py-2 text-blue-400">
+                {{ item.reporter.username if item.reporter else "Deleted user"
+                }}
+              </td>
+
+              <!-- Target -->
+              <td class="px-3 py-2 text-neutral-300">
+                {% if item.target %} {% if item.report.target_type == "post" %}
+                Post: {{ item.target.title }} {% elif item.report.target_type ==
+                "user" %} User: @{{ item.target.username }} {% elif
+                item.report.target_type == "comment" %} Comment ID: {{
+                item.target.id }} {% else %} Unknown target type {% endif %} {%
+                else %}
+                <span class="text-neutral-500 italic">
+                  Target no longer exists
+                </span>
+                {% endif %}
+              </td>
+
+              <!-- Date -->
+              <td class="px-3 py-2 text-neutral-500">
+                {{ item.report.created_at.strftime("%b %d, %Y") }}
+              </td>
+
+              <!-- Status -->
+              <td class="px-3 py-2">
+                {% if item.report.status == "open" %}
+                <span class="text-orange-400">open</span>
+
+                {% elif item.report.status == "resolved" %}
+                <span class="text-green-400">resolved</span>
+
+                {% elif item.report.status == "rejected" %}
+                <span class="text-neutral-400">rejected</span>
+
+                {% else %}
+                <span class="text-red-400">unknown</span>
+                {% endif %}
+              </td>
+
+              <!-- Action -->
+              <td class="px-3 py-2">
+                {% if item.report.status == "open" %}
+                <a
+                  href="{{ url_for('resolve_report', report_id=item.report.id) }}"
+                  class="inline-block px-2 py-1 text-xs bg-green-600 hover:bg-green-500 rounded"
+                >
+                  Review
+                </a>
+                {% else %}
+                <a
+                  href="{{ url_for('resolve_report', report_id=item.report.id) }}"
+                  class="inline-block px-2 py-1 text-xs bg-neutral-600 hover:bg-neutral-500 rounded"
+                >
+                  View
+                </a>
+                {% endif %}
+              </td>
+            </tr>
+
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </body>
+</html>

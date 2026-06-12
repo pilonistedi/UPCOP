@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Critique Board</title>
+    <link rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='favicon.ico') }}">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='output.css') }}"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css"
+    />
+  </head>
+  <body class="bg-neutral-950 text-neutral-100">
+    <header class="bg-neutral-900 border-b border-neutral-800 fixed top-0 left-0 right-0 z-50">
+      <div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+        
+        <a href="{{ url_for('feed') }}"
+           class="flex items-center gap-2 hover:opacity-90 transition-opacity">
+
+          <img
+            src="{{ url_for('static', filename='images/logo.png') }}"
+            alt="Critique logo"
+            class="h-8 w-auto"
+          >
+
+          <span class="text-xl font-extrabold text-neutral-100 tracking-tight">
+            Critique
+          </span>
+        </a>
+
+        <div class="hidden md:flex items-center gap-3">
+          <a href="{{ url_for('submit_project') }}" class="inline-flex items-center gap-1.5 border border-orange-800 hover:bg-orange-800/10 text-neutral-200 transition-all rounded-lg px-3 py-1.5 text-xs font-medium">
+            <span>Submit Project</span>
+            <i class="fa-solid fa-rocket text-[10px] text-orange-500"></i>
+          </a>
+
+          {% if is_logged_in %}
+            <a href="{{ url_for('logout') }}" class="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 border border-neutral-800 bg-neutral-950 hover:bg-neutral-800 text-neutral-300 hover:text-neutral-100 rounded-lg transition-all">
+              <i class="fa-solid fa-right-from-bracket text-[10px] text-neutral-500"></i>
+              <span>Logout</span>
+            </a>
+          {% else %}
+            <a href="{{ url_for('login') }}" class="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 border border-neutral-800 bg-neutral-950 hover:bg-neutral-800 text-neutral-300 hover:text-neutral-100 rounded-lg transition-all">
+              <i class="fa-solid fa-right-to-bracket text-[10px] text-neutral-500"></i>
+              <span>Login</span>
+            </a>
+
+            <a href="{{ url_for('signup') }}" class="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 border border-neutral-800 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 rounded-lg transition-all">
+              <i class="fa-solid fa-user-plus text-[10px] text-neutral-400"></i>
+              <span>Sign Up</span>
+            </a>
+          {% endif %}
+
+          <a href="{{ url_for('profile', user_id=user.id) if is_logged_in else url_for('login') }}">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center border border-neutral-800/50 overflow-hidden shrink-0 select-none {{ 'bg-emerald-500/20 text-emerald-400 font-bold text-xs' if is_logged_in and not user.profile_pic else 'bg-blue-500/20 text-blue-400 text-xs' if not is_logged_in else '' }}" title="Profile">
+              {% if is_logged_in %}
+                {% if user.profile_pic %}
+                  <img 
+                    src="{{ url_for('static', filename=user.profile_pic) }}" 
+                    alt="My Profile" 
+                    class="w-full h-full object-cover"
+                  />
+                {% else %}
+                  {{ user.username[0] | upper }}
+                {% endif %}
+              {% else %}
+                <i class="fa-regular fa-user text-[11px]"></i>
+              {% endif %}
+            </div>
+          </a>
+        </div>
+
+        <div class="flex items-center gap-3 md:hidden">
+          <a href="{{ url_for('profile', user_id=user.id) if is_logged_in else url_for('login') }}">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center border border-neutral-800/50 overflow-hidden shrink-0 select-none {{ 'bg-emerald-500/20 text-emerald-400 font-bold text-xs' if is_logged_in and not user.profile_pic else 'bg-blue-500/20 text-blue-400 text-xs' if not is_logged_in else '' }}" title="Profile">
+              {% if is_logged_in %}
+                {% if user.profile_pic %}
+                  <img 
+                    src="{{ url_for('static', filename=user.profile_pic) }}" 
+                    alt="My Profile" 
+                    class="w-full h-full object-cover"
+                  />
+                {% else %}
+                  {{ user.username[0] | upper }}
+                {% endif %}
+              {% else %}
+                <i class="fa-regular fa-user text-[11px]"></i>
+              {% endif %}
+            </div>
+          </a>
+
+          <button
+            id="menuBtn"
+            type="button"
+            class="relative z-50 text-neutral-400 hover:text-neutral-100 text-xl transition-colors focus:outline-none p-1"
+          >
+            <i class="fa-solid fa-bars"></i>
+          </button>
+        </div>
+      </div>
+
+      <div
+        id="mobileMenu"
+        class="hidden md:hidden fixed top-14 left-0 right-0 z-40
+               border-t border-neutral-800 bg-neutral-900/95 backdrop-blur
+               px-4 py-3 space-y-2.5 text-xs"
+      >
+        <a href="{{ url_for('submit_project') }}" class="flex items-center justify-between text-orange-400 font-medium py-1">
+          <span>Submit Project</span>
+          <i class="fa-solid fa-rocket text-[10px]"></i>
+        </a>
+
+        <div class="border-t border-neutral-800/60 my-1"></div>
+
+        {% if is_logged_in %}
+          <a href="{{ url_for('logout') }}" class="flex items-center justify-between text-neutral-400 hover:text-neutral-200 py-1">
+            <span>Logout</span>
+            <i class="fa-solid fa-right-from-bracket text-[10px]"></i>
+          </a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="flex items-center justify-between text-neutral-400 hover:text-neutral-200 py-1">
+            <span>Login</span>
+            <i class="fa-solid fa-right-to-bracket text-[10px]"></i>
+          </a>
+          <a href="{{ url_for('signup') }}" class="flex items-center justify-between text-neutral-400 hover:text-neutral-200 py-1">
+            <span>Sign Up</span>
+            <i class="fa-solid fa-user-plus text-[10px]"></i>
+          </a>
+        {% endif %}
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 pt-16 flex flex-col md:grid md:grid-cols-3 gap-6">
+      
+      <section class="md:col-span-2 md:overflow-y-auto space-y-4">
+
+        <div class="flex items-center gap-2 sm:gap-3 flex-nowrap">
+          <form method="get" action="" class="relative flex-1 min-w-0 m-0">
+            {% if current_category %}
+              <input type="hidden" name="category" value="{{ current_category }}">
+            {% endif %}
+            <select name="sort_feed" onchange="this.form.submit()" class="w-full appearance-none bg-neutral-900 border border-neutral-800 text-neutral-200 text-xs rounded-lg pl-7 pr-7 py-2 focus:outline-none focus:border-neutral-700 hover:border-neutral-700 transition cursor-pointer">
+              <option value="">Sort Feed</option>
+              <option value="best" {{ 'selected' if current_sort == 'best' else '' }}>Best</option>
+              <option value="rising" {{ 'selected' if current_sort == 'rising' else '' }}>Needs Review</option>
+              <option value="now" {{ 'selected' if current_sort == 'now' else '' }}>Now</option>
+            </select>
+            <div class="absolute inset-y-0 left-2.5 flex items-center pointer-events-none">
+              <i class="fa-solid fa-arrow-down-short-wide text-neutral-500 text-[10px]"></i>
+            </div>
+            <div class="absolute inset-y-0 right-2.5 flex items-center pointer-events-none">
+              <i class="fa-solid fa-chevron-down text-neutral-500 text-[9px]"></i>
+            </div>
+          </form>
+
+          <form method="get" action="" class="relative flex-1 min-w-0 m-0">
+            {% if current_sort %}
+              <input type="hidden" name="sort_feed" value="{{ current_sort }}">
+            {% endif %}
+            <select name="category" onchange="this.form.submit()" class="w-full appearance-none bg-neutral-900 border border-neutral-800 text-neutral-200 text-xs rounded-lg pl-7 pr-7 py-2 focus:outline-none focus:border-neutral-700 hover:border-neutral-700 transition cursor-pointer">
+              <option value="">All Categories</option>
+              {% for category in categories %}
+                <option value="{{ category.id }}" {{ 'selected' if current_category == category.id or current_category == category.id|string else '' }}>
+                  {{ category.name }}
+                </option>
+              {% endfor %}
+            </select>
+            <div class="absolute inset-y-0 left-2.5 flex items-center pointer-events-none">
+              <i class="fa-solid fa-layer-group text-neutral-500 text-[10px]"></i>
+            </div>
+            <div class="absolute inset-y-0 right-2.5 flex items-center pointer-events-none">
+              <i class="fa-solid fa-chevron-down text-neutral-500 text-[9px]"></i>
+            </div>
+          </form>
+        </div>
+
+        {% if is_logged_in %}
+          {% if can_submit %}
+            <div class="bg-neutral-900 border border-neutral-800/90 rounded-xl p-3.5 shadow-md hover:border-neutral-700/60 transition-colors">
+              <form action="{{ url_for('feed') }}" method="POST" enctype="multipart/form-data" class="space-y-3 m-0">
+                
+                <div class="flex flex-wrap items-center gap-2">
+                  <div class="relative">
+                    <span class="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
+                      <i class="fa-solid fa-tags text-blue-400 text-[10px]"></i>
+                    </span>
+                    <select name="category_id" required class="appearance-none bg-neutral-950/80 border border-neutral-800 hover:border-neutral-700 text-neutral-200 text-[11px] font-semibold rounded-full pl-6 pr-6 py-1 focus:outline-none cursor-pointer transition">
+                      <option value="" disabled selected>Select Tag</option>
+                      {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ cat.name | upper }}</option>
+                      {% endfor %}
+                    </select>
+                    <i class="fa-solid fa-chevron-down absolute right-2 top-1/2 -translate-y-1/2 text-neutral-500 text-[8px] pointer-events-none"></i>
+                  </div>
+
+                  {% if user.projects %}
+                  <div class="relative">
+                    <span class="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
+                      <i class="fa-solid fa-folder text-amber-400 text-[10px]"></i>
+                    </span>
+                    <select name="project_id" class="appearance-none bg-neutral-950/80 border border-neutral-800 hover:border-neutral-700 text-neutral-200 text-[11px] font-semibold rounded-full pl-6 pr-6 py-1 focus:outline-none cursor-pointer transition">
+                      <option value="">LINK PROJECT</option>
+                      {% for proj in user.projects %}
+                        <option value="{{ proj.id }}">{{ proj.name | upper }}</option>
+                      {% endfor %}
+                    </select>
+                    <i class="fa-solid fa-chevron-down absolute right-2 top-1/2 -translate-y-1/2 text-neutral-500 text-[8px] pointer-events-none"></i>
+                  </div>
+                  {% endif %}
+                </div>
+
+                <div class="flex gap-3 items-start">
+                  <div class="w-7 h-7 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center font-bold text-xs shrink-0 select-none mt-0.5 overflow-hidden">
+                    {% if user.profile_pic %}
+                      <img 
+                        src="{{ url_for('static', filename=user.profile_pic) }}" 
+                        alt="{{ user.username }}'s avatar" 
+                        class="w-full h-full object-cover"
+                      />
+                    {% else %}
+                      {{ user.username[0] | upper }}
+                    {% endif %}
+                  </div>
+                  
+                  <div class="flex-1 space-y-1.5 min-w-0">
+                    <input 
+                      type="text" 
+                      name="title" 
+                      required 
+                      placeholder="Title your layout..." 
+                      class="w-full bg-transparent text-xs font-bold text-neutral-100 placeholder-neutral-600 focus:outline-none tracking-tight"
+                    />
+                    <textarea 
+                      name="context" 
+                      rows="1" 
+                      placeholder="Say something they'll screenshot..." 
+                      class="w-full bg-transparent text-xs text-neutral-300 placeholder-neutral-500 focus:outline-none resize-none field-sizing-content leading-relaxed"
+                      oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"
+                    ></textarea>
+                    <div class="flex items-center gap-1.5 text-neutral-600 focus-within:text-neutral-400 transition-colors">
+                      <i class="fa-solid fa-link text-[10px] shrink-0"></i>
+                      <input 
+                        type="url" 
+                        name="link" 
+                        placeholder="https://example.com" 
+                        class="w-full bg-transparent text-[10px] text-neutral-400 placeholder-neutral-700 focus:outline-none font-mono truncate"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-neutral-800/50">
+                  <div class="flex items-center gap-1">
+                    <label class="hover:bg-neutral-800 text-neutral-400 hover:text-emerald-400 cursor-pointer transition-all p-1.5 rounded-lg flex items-center justify-center" title="Attach Media Blueprint">
+                      <i class="fa-regular fa-image text-xs"></i>
+                      <input type="file" name="image" accept="image/*" class="hidden" onchange="alert('Image attached successfully!')" />
+                    </label>
+                  </div>
+
+                  <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-neutral-50 font-bold text-xs px-3.5 py-1 rounded-md transition-all shadow-md active:scale-95">
+                    Post
+                  </button>
+                </div>
+
+              </form>
+            </div>
+          {% else %}
+            <div class="mb-6 px-4 py-3.5 bg-amber-500/5 border border-amber-500/20 rounded-xl flex items-start gap-3 text-amber-400/90">
+              <i class="fa-solid fa-lock text-xs mt-0.5 shrink-0"></i>
+              <div class="flex flex-col gap-0.5">
+                <span class="text-xs font-bold text-neutral-200">Submission Track Locked</span>
+                <span class="text-[11px] leading-relaxed">
+                  To ensure platform health, you must critique at least <strong>3 distinct project files</strong> built by peers before launching a fresh submission track here.
+                </span>
+              </div>
+            </div>
+          {% endif %}
+        {% else %}
+          <div class="bg-neutral-900/30 border border-neutral-800/60 border-dashed rounded-xl p-3 text-center">
+            <p class="text-xs text-neutral-500">Want to request a design layout critique? <a href="{{ url_for('login') }}" class="text-blue-400 hover:underline font-semibold">Log in</a> to start sharing assets.</p>
+          </div>
+        {% endif %}
+
+        <div class="flex flex-col">
+          {% for post, score in posts %}
+          <div class="relative block border-b border-neutral-800/80 hover:bg-neutral-900/30 transition-all group">
+            
+            <a href="{{ url_for('view_post', post_id=post.id) }}" class="absolute inset-0 z-10" aria-label="View post details"></a>
+            
+            <div class="flex flex-col p-4 relative z-0">
+              
+              <div class="flex gap-3 items-start">
+                
+                <div class="shrink-0 mt-0.5 select-none relative z-20 group/avatar">
+                  {% set hue = (post.id * 137.5) % 360 %}
+                  
+                  <div 
+                    class="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 ease-out p-[2px]"
+                    style="
+                      background: hsl({{ hue }}, 75%, 50%);
+                      box-shadow: 0 0 8px hsl({{ hue }}, 75%, 50%, 0.25);
+                    "
+                    onmouseover="this.style.boxShadow='0 0 16px hsl({{ hue }}, 85%, 55%, 0.65)', this.style.transform='scale(1.04)'"
+                    onmouseout="this.style.boxShadow='0 0 8px hsl({{ hue }}, 75%, 50%, 0.25)', this.style.transform='scale(1)'"
+                  >
+                    {% if post.user.profile_pic %}
+                      <img 
+                        src="{{ url_for('static', filename=post.user.profile_pic) }}" 
+                        alt="{{ post.user.username }}'s avatar" 
+                        class="w-full h-full rounded-full border border-neutral-950 object-cover bg-neutral-900"
+                        loading="lazy"
+                      />
+                    {% else %}
+                      <div class="w-full h-full rounded-full bg-neutral-900 text-neutral-200 font-bold text-xs flex items-center justify-center tracking-wide">
+                        {{ post.user.username[0] | upper }}
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-center gap-1.5 text-[11px] text-neutral-500 mb-1">
+                    <span class="font-semibold text-neutral-300 hover:underline relative z-20">{{ post.user.username }}</span>
+                    <span>•</span>
+                    <span class="px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-300 text-[10px] font-medium relative z-20">
+                      {{ post.category.name if post.category else "General" }}
+                    </span>
+                    <span>•</span>
+                    <span>{{ post.formatted_date }}</span>
+                    <span>•</span>
+                    <span class="text-blue-400 font-mono">v{{ post.version_number }}</span>
+                  </div>
+
+                  <h2 class="text-sm sm:text-base font-semibold text-neutral-200 group-hover:text-neutral-100 transition-colors leading-snug">
+                    {{ post.title }}
+                  </h2>
+
+                  <p class="text-xs sm:text-sm text-neutral-400 mt-1 line-clamp-2 leading-relaxed">
+                    {{ post.context or "No description provided." }}
+                  </p>
+
+                  {% if post.image_path %}
+                  <div class="mt-3 rounded-xl overflow-hidden bg-neutral-950 border border-neutral-800">
+                    <img src="{{ url_for('static', filename=post.image_path) }}" alt="Project image" class="block w-full h-auto max-h-96 object-contain mx-auto rounded-xl" loading="lazy" />
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-4 mt-3 pl-11 text-[11px] font-medium text-neutral-500 relative z-20">
+                
+                <div class="flex items-center gap-2 border border-neutral-800/80 bg-neutral-900/40 rounded-full px-2 py-0.5">
+                  {% set upvote_class = "text-emerald-500" if score > 0 else "text-neutral-500 hover:text-neutral-200" %}
+                  {% set downvote_class = "text-rose-500" if score < 0 else "text-neutral-500 hover:text-neutral-200" %}
+                  
+                  <button class="{{ upvote_class }} p-0.5 transition-colors focus:outline-none" aria-label="Upvote">
+                    <i class="fa-solid fa-chevron-up text-[10px]"></i>
+                  </button>
+                  <span class="font-bold text-[10px] tabular-nums {{ 'text-emerald-400' if score > 0 else 'text-rose-400' if score < 0 else 'text-neutral-400' }}">
+                    {{ score }}
+                  </span>
+                  <button class="{{ downvote_class }} p-0.5 transition-colors focus:outline-none" aria-label="Downvote">
+                    <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                  </button>
+                </div>
+
+                <span class="flex items-center gap-1">
+                  <i class="fa-regular fa-comments text-neutral-600"></i>
+                  {{ post.critiques|length }} feedback thread{{ 's' if post.critiques|length != 1 else '' }}
+                </span>
+
+                {% if post.critiques|length < 5 %}
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[10px]">
+                    <i class="fa-solid fa-circle-exclamation text-[8px]"></i>
+                    Needs {{ 5 - post.critiques|length }} more reviews
+                  </span>
+                {% endif %}
+              </div>
+
+              {% if post.critiques and post.critiques|length > 0 %}
+                {% set first_critique = post.critiques[0] %}
+                <div class="mt-3 ml-11 border-l-2 border-orange-500/50 bg-orange-500/[0.02] py-1 pl-3 rounded-r relative z-20">
+                  <div class="flex items-center gap-1.5 text-[10px] text-neutral-500 mb-0.5">
+                    <i class="fa-regular fa-comment text-orange-500/70 text-[9px]"></i>
+                    <span class="font-medium text-neutral-400">{{ first_critique.user.username if first_critique.user else 'Anonymous' }}</span>
+                    <span>·</span>
+                    <span>Latest Critique</span>
+                  </div>
+                  <p class="text-xs text-neutral-300 leading-normal line-clamp-2 italic">
+                    "{{ first_critique.content }}"
+                  </p>
+                </div>
+              {% endif %}
+
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="mt-8 mb-8 flex items-center justify-center">
+          <div class="flex items-center gap-3 bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2">
+            {% if page > 1 %}
+            <a href="{{ url_for('feed', page=page-1, sort_feed=request.args.get('sort_feed'), category=request.args.get('category')) }}" class="px-3 py-1 text-xs rounded border border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:border-neutral-600 transition">Prev</a>
+            {% endif %}
+            <span class="text-xs text-neutral-400 px-2">
+              Page <span class="text-neutral-200">{{ page }}</span> of {{ total_pages }}
+            </span>
+            {% if page < total_pages %}
+            <a href="{{ url_for('feed', page=page+1, sort_feed=request.args.get('sort_feed'), category=request.args.get('category')) }}" class="px-3 py-1 text-xs rounded border border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:border-neutral-600 transition">Next</a>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+
+      <aside class="md:col-span-1 space-y-4 md:sticky md:top-[72px] md:self-start">
+        
+        <div class="bg-neutral-900 border border-neutral-800/80 rounded-lg p-4 transition-all hover:border-neutral-800">
+          <a href="{{ url_for('upcoming_changes') }}" class="block group focus:outline-none">
+            <div class="flex items-center gap-1.5 text-[11px] text-neutral-500 font-semibold uppercase tracking-wider mb-2">
+              <i class="fa-solid fa-screwdriver-wrench text-orange-500/80 text-[10px]"></i>
+              <span>Admin Roadmap</span>
+            </div>
+            
+            <h4 class="text-xs font-bold text-neutral-200 group-hover:text-neutral-100 transition-colors">
+              Upcoming Changes / Suggestions
+            </h4>
+
+            <div class="mt-2 pl-2.5 border-l border-neutral-800 group-hover:border-orange-500/40 transition-colors space-y-2">
+              <ul class="text-[11px] text-neutral-400 space-y-1.5 list-none m-0 p-0">
+                {% for change in upcoming_changes %}
+                  <li class="flex items-start gap-1.5">
+                    <span class="text-orange-500/60 text-[9px] select-none">•</span>
+                    <span class="leading-relaxed line-clamp-1">{{ change.title }}</span>
+                  </li>
+                {% else %}
+                  <li class="text-neutral-500 italic text-[11px]">No scheduled maintenance updates.</li>
+                {% endfor %}
+              </ul>
+              
+              <div class="inline-flex items-center gap-1 text-[10px] text-neutral-500 group-hover:text-orange-400 font-medium pt-1 transition-colors">
+                <span>View roadmap</span>
+                <i class="fa-solid fa-arrow-right text-[8px] transform group-hover:translate-x-0.5 transition-transform"></i>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <div class="bg-neutral-900 border border-neutral-800/80 rounded-lg p-4 transition-all hover:border-neutral-800">
+          <h3 class="text-xs font-bold text-neutral-200 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-circle-info text-orange-500/80 text-[11px]"></i>
+            <span>How Critique Works</span>
+          </h3>
+          <ul class="text-xs text-neutral-400 space-y-2.5">
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-scale-balanced text-[10px] text-neutral-600 mt-0.5 shrink-0"></i>
+              <span>Give honest, constructive feedback.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-lightbulb text-[10px] text-neutral-600 mt-0.5 shrink-0"></i>
+              <span>Focus on clarity and value proposition.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-users text-[10px] text-neutral-600 mt-0.5 shrink-0"></i>
+              <span>Respect fellow creators.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-check-to-slot text-[10px] text-neutral-600 mt-0.5 shrink-0"></i>
+              <span>Vote only if you have experience reviewing.</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="bg-neutral-900 border border-neutral-800/80 rounded-lg p-4 transition-all hover:border-neutral-800">
+          <h3 class="text-xs font-bold text-neutral-200 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-wand-magic-sparkles text-amber-500/80 text-[11px]"></i>
+            <span>Reviewer Tips</span>
+          </h3>
+          <ul class="text-xs text-neutral-400 space-y-2.5">
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-eye text-[10px] text-neutral-600 mt-0.5 shrink-0"></i>
+              <span>Check the post title first.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-fire-flame-simple text-[10px] text-neutral-600 mt-0.5 shrink-0"></i>
+              <span>Look for <span class="text-amber-500/90 font-medium">“Needs Review”</span> posts.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-bolt text-[10px] text-neutral-600 mt-0.5 shrink-0"></i>
+              <span>Be concise in comments.</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="pt-4 px-2 border-t border-neutral-800/60 text-[10px] text-neutral-500 space-y-2.5">
+          <div class="flex flex-wrap gap-x-3 gap-y-1.5 font-medium">
+            <a href="{{ url_for('rules') }}" class="hover:text-neutral-300 transition-colors">Rules</a>
+            <a href="{{ url_for('accessibility') }}" class="hover:text-neutral-300 transition-colors">Accessibility</a>
+            <a href="{{ url_for('privacy') }}" class="hover:text-neutral-300 transition-colors">Privacy Policy</a>
+            <a href="{{ url_for('terms') }}" class="hover:text-neutral-300 transition-colors">User Agreement</a>
+          </div>
+          <div class="text-[9px] tracking-wide text-neutral-600">
+            Critique, Inc. © 2026. All rights reserved.
+          </div>
+        </div>
+
+      </aside>
+    </main>
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+  </body>
+</html>

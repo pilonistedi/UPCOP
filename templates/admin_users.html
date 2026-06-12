@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Manage Users · Admin</title>
+    <link rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="/static/output.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      .hidden-col {
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body class="bg-neutral-950 text-neutral-100">
+    <header class="bg-neutral-900 border-b border-neutral-800">
+      <div
+        class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between"
+      >
+        <span class="text-sm font-semibold">Admin · Users</span>
+        <a
+          href="{{ url_for('admin_dashboard') }}"
+          class="text-sm text-neutral-400 hover:text-neutral-200"
+        >
+          Back to Dashboard
+        </a>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-8">
+      <div
+        class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-neutral-900/40 p-3 rounded-lg border border-neutral-800/60 mb-4"
+      >
+        <!-- Left Side: Filters & Search Bar Group -->
+        <div
+          class="flex flex-col sm:flex-row sm:items-center gap-3 flex-1 max-w-3xl"
+        >
+          <!-- Search Input (Expands beautifully) -->
+          <div class="relative flex-1 min-w-[240px]">
+            <div
+              class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-neutral-500 text-sm"
+            >
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <input
+              type="text"
+              placeholder="Search users, posts, or keywords..."
+              class="w-full bg-neutral-900 border border-neutral-800 pl-9 pr-4 py-2 rounded text-sm text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-neutral-700 transition-colors"
+            />
+          </div>
+
+          <!-- Category Dropdown -->
+          <div class="relative shrink-0">
+            <select
+              class="appearance-none bg-neutral-900 border border-neutral-800 pl-3 pr-8 py-2 rounded text-sm text-neutral-200 focus:outline-none focus:border-neutral-700 cursor-pointer w-full sm:w-auto"
+            >
+              <option>All Categories</option>
+              {% for category in categories %}
+              <option>{{ category.name }}</option>
+              {% endfor %}
+            </select>
+            <div
+              class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-neutral-500 text-xs"
+            >
+              <i class="fa-solid fa-chevron-down"></i>
+            </div>
+          </div>
+
+          <!-- Sorting Dropdown -->
+          <div class="relative shrink-0">
+            <select
+              class="appearance-none bg-neutral-900 border border-neutral-800 pl-3 pr-8 py-2 rounded text-sm text-neutral-200 focus:outline-none focus:border-neutral-700 cursor-pointer w-full sm:w-auto"
+            >
+              <option>Newest</option>
+              <option>Most Reported</option>
+              <option>Most Commented</option>
+            </select>
+            <div
+              class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-neutral-500 text-xs"
+            >
+              <i class="fa-solid fa-chevron-down"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Far Right Side: Column Visibility Toggles -->
+        <div
+          class="flex items-center gap-2 shrink-0 lg:border-l lg:border-neutral-800 lg:pl-4"
+        >
+          <span
+            class="text-xs font-medium text-neutral-500 mr-1 flex items-center gap-1"
+          >
+            <i class="fa-solid fa-table-columns"></i> Columns:
+          </span>
+
+          <button
+            onclick="toggleCol('col_last_active')"
+            class="px-2.5 py-1 bg-neutral-800 border border-neutral-700/50 rounded text-xs text-neutral-300 hover:bg-neutral-700 hover:text-white transition-colors"
+          >
+            Last Active
+          </button>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="border-b border-neutral-800">
+              <th class="text-left px-3 py-2 text-neutral-400">ID</th>
+              <th class="text-left px-3 py-2 text-neutral-400">Username</th>
+              <th class="text-left px-3 py-2 text-neutral-400">Email</th>
+              <th class="text-left px-3 py-2 text-neutral-400">Role</th>
+              <th class="text-left px-3 py-2 text-neutral-400">Status</th>
+              <th class="text-left px-3 py-2 text-neutral-400">
+                Reports filed
+              </th>
+              <th class="text-left px-3 py-2 text-neutral-400">
+                Reports recieved
+              </th>
+              <th
+                class="col_last_active hidden-col text-left px-3 py-2 text-neutral-400"
+              >
+                Last Active
+              </th>
+              <th class="text-left px-3 py-2 text-neutral-400">Joined</th>
+              <th class="text-left px-3 py-2 text-neutral-400">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for item in user_data %}
+            <tr class="border-b border-neutral-800 hover:bg-neutral-800">
+              <td class="px-3 py-2">{{ item.user.id }}</td>
+              <td class="px-3 py-2">{{ item.user.username }}</td>
+              <td class="px-3 py-2">{{ item.user.email }}</td>
+
+              <td class="px-3 py-2">
+                {% if item.user.is_admin %}
+                <span class="text-green-400">Admin</span>
+                {% else %}
+                <span class="text-neutral-400">User</span>
+                {% endif %}
+              </td>
+
+              <td class="px-3 py-2">
+                {% if item.user.is_banned %}
+                <span class="text-red-400">Banned</span>
+                {% else %}
+                <span class="text-neutral-400">Active</span>
+                {% endif %}
+              </td>
+
+              <!-- Reports Filed -->
+              <td class="px-3 py-2 text-yellow-400">
+                {{ item.reports_filed }}
+              </td>
+
+              <!-- Reports Received -->
+              <td class="px-3 py-2 text-red-400">
+                {{ item.reports_received }}
+              </td>
+              <td
+                class="col_last_active hidden-col px-3 py-2 whitespace-nowrap text-sm"
+              >
+                {% if item.last_seen and (now() -
+                item.last_seen).total_seconds() < 300 %}
+
+                <div
+                  class="flex items-center gap-1.5 font-medium text-green-400"
+                >
+                  <span
+                    class="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"
+                  ></span>
+                  <span>Active now</span>
+                </div>
+                {% else %}
+                <span class="text-neutral-400">
+                  {{ last_seen_text(item.last_seen) if item.last_seen else
+                  'Never' }}
+                </span>
+                {% endif %}
+              </td>
+
+              <td class="px-3 py-2">
+                {{ item.user.created_at.strftime("%b %d, %Y") }}
+              </td>
+
+              <td class="px-3 py-2 flex gap-2">
+                {% if item.user.username != "superadmin" %}
+
+                <form
+                  method="POST"
+                  action="/admin/users/toggle-admin/{{ item.user.id }}"
+                  onsubmit="
+                    return confirm(
+                      'Are you sure you want to promote/demote this user?',
+                    );
+                  "
+                >
+                  <button
+                    class="px-2 py-1 text-xs bg-green-600 rounded hover:bg-green-500"
+                  >
+                    {% if item.user.is_admin %}Demote{% else %}Promote{% endif
+                    %}
+                  </button>
+                </form>
+
+                <form
+                  method="POST"
+                  action="/admin/users/toggle-ban/{{ item.user.id }}"
+                  onsubmit="
+                    return confirm(
+                      'Are you sure you want to change this user’s status?',
+                    );
+                  "
+                >
+                  <button
+                    class="px-2 py-1 text-xs bg-yellow-600 rounded hover:bg-yellow-500"
+                  >
+                    {% if item.user.is_banned %}Unban{% else %}Ban{% endif %}
+                  </button>
+                </form>
+
+                <form
+                  method="POST"
+                  action="/admin/users/delete/{{ item.user.id }}"
+                  onsubmit="
+                    return confirm('This action cannot be undone. Continue?');
+                  "
+                >
+                  <button
+                    class="px-2 py-1 text-xs bg-red-600 rounded hover:bg-red-500"
+                  >
+                    Delete
+                  </button>
+                </form>
+
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </main>
+    <script>
+      function toggleCol(colClass) {
+        document.querySelectorAll("." + colClass).forEach((el) => {
+          el.classList.toggle("hidden-col");
+        });
+      }
+    </script>
+  </body>
+</html>

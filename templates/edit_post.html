@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Edit Post · Critique</title>
+    <link rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='output.css') }}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Font Awesome Link -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  </head>
+  <body class="bg-neutral-950 text-neutral-100 antialiased min-h-screen">
+
+    <!-- Header Navigation -->
+    <header class="bg-neutral-900/50 backdrop-blur-md border-b border-neutral-800/60 fixed inset-x-0 top-0 z-50">
+      <div class="max-w-5xl mx-auto h-14 px-4 sm:px-6 flex items-center justify-between">
+        <a href="{{ url_for('feed') }}"
+           class="inline-flex items-center gap-2 hover:opacity-90 transition-opacity">
+
+          <img
+            src="{{ url_for('static', filename='images/logo.png') }}"
+            alt="Critique"
+            class="h-7 w-auto"
+          >
+
+          <span class="text-base font-extrabold text-neutral-100 tracking-tight">
+            Critique
+          </span>
+        </a>
+        <a href="{{ url_for('view_post', post_id=post.id) }}" class="text-xs text-neutral-400 hover:text-neutral-200 transition-colors inline-flex items-center gap-1.5 font-medium group">
+          <i class="fa-solid fa-arrow-left text-[10px] transform group-hover:-translate-x-0.5 transition-transform"></i>
+          <span>Back to Post</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="max-w-2xl mx-auto px-4 sm:px-6 pt-24 pb-20">
+      
+      <!-- Form Showcase Card -->
+      <section class="bg-neutral-900 border border-neutral-800/80 rounded-xl p-6 sm:p-8 shadow-2xl">
+        
+        <!-- Section Header Intro -->
+        <header class="mb-6 border-b border-neutral-800/60 pb-5">
+          <h1 class="text-xl font-bold tracking-tight text-neutral-100">
+            Edit project
+          </h1>
+          <p class="mt-1 text-xs text-neutral-400 max-w-prose leading-relaxed">
+            Update your project details and refine the feedback loops you want to prioritize.
+          </p>
+        </header>
+
+        <!-- Configuration Form Content Box -->
+        <form
+          method="POST"
+          action="{{ url_for('edit_post', post_id=post.id) }}"
+          enctype="multipart/form-data"
+          class="space-y-4"
+        >
+          <!-- Title + Category Composite Layout Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Project Title Input Block -->
+            <div>
+              <label class="block text-xs font-medium text-neutral-400 mb-1.5">
+                Project Title
+              </label>
+              <div class="relative">
+                <input
+                  type="text"
+                  name="title"
+                  value="{{ post.title }}"
+                  required
+                  placeholder="e.g., Early-stage SaaS landing page"
+                  class="w-full bg-neutral-950 border border-neutral-800 rounded-lg pl-8.5 pr-3 py-2 text-xs text-neutral-100 placeholder-neutral-600 focus:outline-none focus:border-neutral-700 transition"
+                />
+                <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                  <i class="fa-solid fa-heading text-neutral-600 text-[10px]"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Category Selection Picker Block -->
+            <div>
+              <label class="block text-xs font-medium text-neutral-400 mb-1.5">
+                Category
+              </label>
+              <div class="relative">
+                <select
+                  name="category"
+                  required
+                  class="w-full bg-neutral-950 border border-neutral-800 rounded-lg pl-8.5 pr-8 py-2 text-xs text-neutral-100 appearance-none focus:outline-none focus:border-neutral-700 transition cursor-pointer"
+                >
+                  <option value="" class="text-neutral-600">Select a category</option>
+                  {% for category in categories %}
+                    {% if category.id == post.category_id %}
+                      <option value="{{ category.id }}" selected>{{ category.name }}</option>
+                    {% else %}
+                      <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+                <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                  <i class="fa-solid fa-layer-group text-neutral-600 text-[10px]"></i>
+                </div>
+                <!-- Custom Form Dropdown Chevron -->
+                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-neutral-600">
+                  <i class="fa-solid fa-chevron-down text-[9px]"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Production Link Input Field -->
+          <div>
+            <label class="block text-xs font-medium text-neutral-400 mb-1.5">
+              Project Link
+            </label>
+            <div class="relative">
+              <input
+                type="url"
+                name="link"
+                value="{{ post.link }}"
+                placeholder="https://yourdesign.com or github.com/username/repo"
+                class="w-full bg-neutral-950 border border-neutral-800 rounded-lg pl-8.5 pr-3 py-2 text-xs text-neutral-100 placeholder-neutral-600 focus:outline-none focus:border-neutral-700 transition"
+              />
+              <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                <i class="fa-solid fa-link text-neutral-600 text-[10px]"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- File Upload and Existing Media Preview Asset Manager -->
+          <div>
+            <label class="block text-xs font-medium text-neutral-400 mb-1.5">
+              Project Image <span class="text-neutral-600 font-normal ml-0.5">(optional)</span>
+            </label>
+
+            <!-- Render current image asset container if existing -->
+            {% if post.image_path %}
+              <div class="mb-3 relative group max-w-xs">
+                <img
+                  src="{{ url_for('static', filename=post.image_path) }}"
+                  alt="Current project image"
+                  class="max-h-40 object-cover w-full rounded-lg border border-neutral-800 shadow-md"
+                />
+                <div class="mt-1.5 flex items-center gap-1.5 text-[11px] text-neutral-500">
+                  <i class="fa-regular fa-file-image text-[10px]"></i>
+                  <span>Active preview. Upload a new asset below to swap.</span>
+                </div>
+              </div>
+            {% endif %}
+
+            <!-- Dropzone Area Interactive Target Area Wrapper Frame -->
+            <label
+              class="flex flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-neutral-800 bg-neutral-950 px-4 py-5 text-center cursor-pointer hover:border-neutral-700 hover:bg-neutral-900/40 transition group"
+            >
+              <i class="fa-regular fa-image text-neutral-600 text-base group-hover:text-neutral-400 transition-colors"></i>
+              <div class="text-xs text-neutral-400">
+                <span class="font-medium text-neutral-300 group-hover:text-neutral-200">Drop a new file</span> or click to upload
+              </div>
+              <span class="text-[10px] text-neutral-600 tracking-wider uppercase">PNG, JPG, WEBP</span>
+              <input type="file" name="image" accept="image/*" class="hidden" />
+            </label>
+          </div>
+
+          <!-- Context Narrative Panel Area -->
+          <div>
+            <label class="block text-xs font-medium text-neutral-400 mb-1.5">
+              Context
+            </label>
+            <textarea
+              name="context"
+              rows="4"
+              required
+              placeholder="What is this project? Who is it for? What stage is it in?"
+              class="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-xs text-neutral-100 placeholder-neutral-600 resize-none focus:outline-none focus:border-neutral-700 transition leading-relaxed"
+            >{{ post.context }}</textarea>
+          </div>
+
+          <!-- Target Optimization Critique Requirements Box Panel -->
+          <div>
+            <label class="block text-xs font-medium text-neutral-400 mb-1.5">
+              Feedback you're looking for
+            </label>
+            <textarea
+              name="feedback"
+              rows="4"
+              required
+              placeholder="Clarity of value proposition, design consistency, user flows…"
+              class="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-xs text-neutral-100 placeholder-neutral-600 resize-none focus:outline-none focus:border-neutral-700 transition leading-relaxed"
+            >{{ post.feedback }}</textarea>
+          </div>
+
+          <!-- Action Control Form Tray Row Block -->
+          <div class="pt-4 border-t border-neutral-800/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <p class="text-[11px] text-neutral-600 flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-info text-[10px]"></i>
+              <span>Refined project objectives lead to cleaner user critiques.</span>
+            </p>
+
+            <div class="flex items-center justify-end gap-3 shrink-0">
+              <a 
+                href="{{ url_for('view_post', post_id=post.id) }}"
+                class="px-4 py-2 rounded-lg border border-neutral-800 text-xs font-medium text-neutral-400 hover:text-neutral-200 hover:border-neutral-700 hover:bg-neutral-900/50 transition-all text-center min-w-[80px]"
+              >
+                Discard
+              </a>
+
+              <button
+                type="submit"
+                class="px-4 py-2 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-950 text-xs font-semibold transition-all shadow-sm flex items-center justify-center gap-1.5 min-w-[120px]"
+              >
+                <span>Save Changes</span>
+                <i class="fa-solid fa-check text-[9px]"></i>
+              </button>
+            </div>
+          </div>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

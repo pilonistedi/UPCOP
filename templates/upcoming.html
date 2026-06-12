@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Upcoming Changes · Critique</title>
+    <link rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='favicon.ico') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='output.css') }}"
+    />
+    <!-- Font Awesome Free Stack CDN -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+
+  <body class="bg-neutral-950 text-neutral-100 antialiased min-h-screen">
+    
+    <!-- NAVBAR (Synchronized Core Shell Header) -->
+    <header class="bg-neutral-900/50 backdrop-blur-md border-b border-neutral-800/60 fixed top-0 left-0 right-0 z-50">
+      <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+        <div class="inline-flex items-center gap-2">
+          <a href="{{ url_for('feed') }}"
+             class="inline-flex items-center gap-2 hover:opacity-90 transition-opacity">
+
+            <img
+              src="{{ url_for('static', filename='images/logo.png') }}"
+              alt="Critique"
+              class="h-7 w-auto"
+            >
+
+            <span class="text-base font-extrabold text-neutral-100 tracking-tight">
+              Critique
+            </span>
+          </a>
+          <span class="text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded bg-neutral-800 border border-neutral-700/60 text-neutral-400 font-bold">Roadmap</span>
+        </div>
+
+        <a
+          href="{{ url_for('feed') }}"
+          class="text-xs text-neutral-400 hover:text-neutral-200 transition-colors inline-flex items-center gap-1.5 font-medium group"
+        >
+          <i class="fa-solid fa-arrow-left text-[10px] transform group-hover:-translate-x-0.5 transition-transform"></i>
+          <span>Back to Feed</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- MAIN TWO-COLUMN WORKSPACE LAYOUT -->
+    <main class="max-w-5xl mx-auto px-4 pt-24 pb-16 flex flex-col md:flex-row gap-6">
+      
+      <!-- LEFT MODULE: PROGRESSIVE CHANGE FEED -->
+      <section class="w-full md:flex-1 space-y-4">
+        
+        <!-- DASHBOARD HUB INTRO -->
+        <div class="mb-5 border-b border-neutral-800/60 pb-4">
+          <h1 class="text-lg font-bold tracking-tight text-neutral-100">Upcoming Changes</h1>
+          <p class="text-xs text-neutral-500 mt-1 leading-relaxed">
+            A transparent overview of planned refinements, features, and active production iterations. Nothing here is permanent.
+          </p>
+        </div>
+
+        {% for change in changes %}
+          <!-- PREMIUM REFACTORED CHANGE ITEM CARD -->
+          <div class="bg-neutral-900 border border-neutral-800/80 rounded-xl p-4 shadow-xl transition-all hover:border-neutral-800">
+            <!-- Primary Row Block Layout -->
+            <div class="flex items-start justify-between gap-4">
+              <div class="space-y-1">
+                <h2 class="text-sm font-bold text-neutral-100 tracking-tight">
+                  {{ change.title }}
+                </h2>
+                <p class="text-xs text-neutral-400 leading-relaxed max-w-2xl">
+                  {{ change.description }}
+                </p>
+              </div>
+
+              <!-- Refined Clean Structural Badges -->
+              <span
+                class="text-[10px] px-2.5 py-0.5 rounded-md font-medium border tracking-wide whitespace-nowrap {% if change.status == 'planned' %} bg-yellow-500/5 text-yellow-400 border-yellow-500/20 {% elif change.status == 'in_progress' %} bg-blue-500/5 text-blue-400 border-blue-500/20 {% elif change.status == 'released' %} bg-green-500/5 text-green-400 border-green-500/20 {% elif change.status == 'delayed' %} bg-orange-500/5 text-orange-400 border-orange-500/20 {% else %} bg-neutral-800 text-neutral-400 border-neutral-700 {% endif %}"
+              >
+                {{ change.status.replace("_", " ").title() }}
+              </span>
+            </div>
+
+            <!-- CARD COMPONENT METADATA LOWER BAR -->
+            <div class="mt-3.5 pt-3 border-t border-neutral-800/60 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] text-neutral-500 font-medium">
+              {% if change.target_version %}
+                <span class="inline-flex items-center gap-1.5 font-mono bg-neutral-950 px-1.5 py-0.5 rounded border border-neutral-800">
+                  <i class="fa-solid fa-code-branch text-[9px] text-neutral-600"></i>
+                  <span>v{{ change.target_version }}</span>
+                </span>
+              {% endif %} 
+              
+              {% if change.target_date %}
+                <span class="inline-flex items-center gap-1.5">
+                  <i class="fa-regular fa-calendar-check text-[10px] text-neutral-600"></i>
+                  <span>ETA {{ change.target_date }}</span>
+                </span>
+              {% endif %} 
+              
+              {% if change.category %}
+                <span class="inline-flex items-center gap-1.5 capitalize bg-neutral-800/40 px-2 py-0.5 rounded-full text-neutral-400 text-[10px]">
+                  {{ change.category }}
+                </span>
+              {% endif %}
+            </div>
+          </div>
+
+        {% else %}
+          <!-- Null Workspace State Container Block -->
+          <div class="bg-neutral-900 border border-neutral-800/80 rounded-xl p-8 text-center shadow-inner">
+            <div class="w-10 h-10 rounded-full bg-neutral-950 border border-neutral-800 flex items-center justify-center mx-auto mb-3">
+              <i class="fa-regular fa-folder-open text-neutral-600 text-xs"></i>
+            </div>
+            <p class="text-neutral-400 text-xs font-medium">No upcoming roadmap records matched your context window.</p>
+          </div>
+        {% endfor %}
+      </section>
+
+      <!-- RIGHT MODULE: METRIC SIDEBAR ASIDE OVERVIEW -->
+      <aside class="w-full md:w-72 space-y-4 shrink-0">
+        
+        <!-- ROADMAP SUMMARY COMPONENT INDEX -->
+        <div class="bg-neutral-900 border border-neutral-800/80 rounded-xl p-4 shadow-xl">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3.5 inline-flex items-center gap-1.5">
+            <i class="fa-solid fa-chart-pie text-[10px] text-neutral-500"></i>
+            <span>Metrics Overview</span>
+          </h3>
+
+          <div class="space-y-2.5 text-xs text-neutral-400 font-medium">
+            <div class="flex justify-between items-center px-1">
+              <span class="inline-flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-yellow-500/60"></span>
+                <span>Planned</span>
+              </span>
+              <span class="text-yellow-400 font-mono bg-neutral-950 px-1.5 py-0.5 rounded border border-neutral-800">
+                {{ changes | selectattr("status", "equalto", "planned") | list | length }}
+              </span>
+            </div>
+
+            <div class="flex justify-between items-center px-1">
+              <span class="inline-flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-500/60"></span>
+                <span>In progress</span>
+              </span>
+              <span class="text-blue-400 font-mono bg-neutral-950 px-1.5 py-0.5 rounded border border-neutral-800">
+                {{ changes | selectattr("status", "equalto", "in_progress") | list | length }}
+              </span>
+            </div>
+
+            <div class="flex justify-between items-center px-1">
+              <span class="inline-flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-green-500/60"></span>
+                <span>Released</span>
+              </span>
+              <span class="text-green-400 font-mono bg-neutral-950 px-1.5 py-0.5 rounded border border-neutral-800">
+                {{ changes | selectattr("status", "equalto", "released") | list | length }}
+              </span>
+            </div>
+
+            <div class="flex justify-between items-center px-1">
+              <span class="inline-flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-orange-500/60"></span>
+                <span>Delayed</span>
+              </span>
+              <span class="text-orange-400 font-mono bg-neutral-950 px-1.5 py-0.5 rounded border border-neutral-800">
+                {{ changes | selectattr("status", "equalto", "delayed") | list | length }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTEXT CARD DESCRIPTION TRACK PANEL -->
+        <div class="bg-neutral-900 border border-neutral-800/80 rounded-xl p-4 shadow-xl">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-2 inline-flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-info text-[10px] text-neutral-500"></i>
+            <span>Development Cycles</span>
+          </h3>
+
+          <ul class="text-xs text-neutral-400 space-y-2 pl-1 pt-1">
+            <li class="flex items-start gap-2 leading-relaxed">
+              <span class="text-neutral-600 select-none text-[10px] mt-0.5">•</span>
+              <span>This view syncs directly with our internal development branches.</span>
+            </li>
+            <li class="flex items-start gap-2 leading-relaxed">
+              <span class="text-neutral-600 select-none text-[10px] mt-0.5">•</span>
+              <span>Feature scope and delivery horizons may shift based on user telemetry.</span>
+            </li>
+            <li class="flex items-start gap-2 leading-relaxed">
+              <span class="text-neutral-600 select-none text-[10px] mt-0.5">•</span>
+              <span>Alpha tags remain unstable until locked into release metrics.</span>
+            </li>
+          </ul>
+        </div>
+      </aside>
+    </main>
+
+    <!-- INLINE USER IMPROVEMENT FOOTER SUB-SECTION FRAME -->
+    <section class="border-t border-neutral-800/80 bg-neutral-900/20 backdrop-blur-sm">
+      <div class="max-w-5xl mx-auto px-4 py-12">
+        <div class="max-w-xl">
+          <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-neutral-900 border border-neutral-800 text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-3">
+            <i class="fa-regular fa-comment-dots text-neutral-500"></i>
+            <span>Telemetry & Input Channel</span>
+          </div>
+          
+          <h2 class="text-base font-bold tracking-tight text-neutral-100">
+            Suggest an Improvement
+          </h2>
+          <p class="text-xs text-neutral-500 mt-1 leading-relaxed">
+            Spot a critical workflow mismatch or scaling breakdown? Toss your structured logic down below—our team acts directly on concise technical feedback.
+          </p>
+
+          <form
+            method="POST"
+            action="{{ url_for('submit_suggestion') }}"
+            class="mt-5 space-y-4"
+          >
+            <!-- FEEDBACK AREA INPUT BOX CONTAINER -->
+            <div>
+              <label class="block text-xs font-medium text-neutral-400 mb-1.5" for="message">
+                Your suggestion
+              </label>
+              <textarea
+                id="message"
+                name="message"
+                rows="4"
+                required
+                placeholder="Detail clear performance bugs, UX layout bottlenecks, or targeted engine capabilities..."
+                class="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-xs text-neutral-100 placeholder-neutral-600 focus:outline-none focus:border-neutral-700 transition leading-relaxed resize-none"
+              ></textarea>
+            </div>
+
+            <!-- USER IDENTITY CONTACT CONTAINER MASK -->
+            <div>
+              <label class="block text-xs font-medium text-neutral-400 mb-1.5" for="email">
+                Email Address <span class="text-neutral-600 font-normal ml-0.5">(optional)</span>
+              </label>
+              <div class="relative">
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="developer@domain.com"
+                  class="w-full bg-neutral-950 border border-neutral-800 rounded-lg pl-8.5 pr-3 py-2 text-xs text-neutral-100 placeholder-neutral-600 focus:outline-none focus:border-neutral-700 transition"
+                />
+                <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                  <i class="fa-regular fa-envelope text-neutral-600 text-[10px]"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- METRIC PREFERENCE OPT IN BLOCKS -->
+            <div class="flex items-start gap-2.5 pt-1">
+              <input
+                type="checkbox"
+                name="subscribe"
+                id="subscribe"
+                class="mt-0.5 rounded bg-neutral-950 border-neutral-800 text-neutral-100 accent-neutral-300 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+              />
+              <label for="subscribe" class="text-xs text-neutral-400 cursor-pointer select-none leading-normal">
+                Ping my instance when these production notes deploy down to live branches.
+              </label>
+            </div>
+
+            <!-- ACTION CTA SUBMIT ACTION TRAY -->
+            <div class="pt-1">
+              <button
+                type="submit"
+                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-950 text-xs font-semibold transition-all shadow-sm"
+              >
+                <span>Send Suggestion</span>
+                <i class="fa-solid fa-paper-plane text-[9px]"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- CORE INSTANCE GLOBAL FOOTER BAR CONTAINER -->
+    <footer class="border-t border-neutral-800/60 bg-neutral-950">
+      <div class="max-w-5xl mx-auto px-4 py-6 flex items-center justify-between text-[11px] text-neutral-600 font-medium">
+        <div>Critique, Inc. © 2026. All engine rights locked.</div>
+        <div class="flex items-center gap-3 font-mono text-[10px]">
+          <span class="text-neutral-700">SYS_STATUS //</span>
+          <span class="inline-flex items-center gap-1 text-green-500/80">
+            <span class="w-1 h-1 rounded-full bg-green-500 animate-pulse"></span>
+            <span>OPERATIONAL</span>
+          </span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

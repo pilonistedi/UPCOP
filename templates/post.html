@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ post.title }} · Critique</title>
+    <link rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='output.css') }}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css" />
+  </head>
+  <body class="bg-neutral-950 text-neutral-100 antialiased">
+
+    <header class="bg-neutral-900/80 backdrop-blur-md border-b border-neutral-800 fixed top-0 left-0 right-0 z-50">
+      <div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+        <a href="{{ url_for('feed') }}"
+           class="flex items-center gap-2 hover:opacity-90 transition-opacity">
+
+          <img
+            src="{{ url_for('static', filename='images/logo.png') }}"
+            alt="Critique logo"
+            class="h-8 w-auto"
+          >
+
+          <span class="text-xl font-extrabold text-neutral-100 tracking-tight">
+            Critique
+          </span>
+        </a>
+        <a href="{{ url_for('feed') }}" class="text-xs md:text-sm text-neutral-400 hover:text-neutral-200 transition-colors">
+          Back to Feed
+        </a>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-3 md:px-4 pt-20 pb-16 flex flex-col md:flex-row gap-6">
+      <section class="w-full md:w-2/3 space-y-5">
+        
+        <div class="bg-neutral-900 border border-neutral-800/90 rounded-xl p-4 md:p-5 space-y-4">
+          
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-full overflow-hidden shrink-0 select-none bg-neutral-800 border border-neutral-700/60 flex items-center justify-center font-bold text-xs text-neutral-300">
+                {% if post.user and post.user.profile_pic %}
+                  <img src="{{ url_for('static', filename=post.user.profile_pic) }}" alt="{{ post.user.username }}'s avatar" class="w-full h-full object-cover" />
+                {% elif post.user %}
+                  {{ post.user.username[0] | upper }}
+                {% else %}
+                  ?
+                {% endif %}
+              </div>
+
+              <div class="min-w-0 flex flex-col sm:flex-row sm:items-center sm:gap-x-1.5 text-xs">
+                <a href="{{ url_for('profile', user_id=post.user.id) if post.user else '#' }}" class="font-semibold text-neutral-200 hover:underline truncate">
+                  u/{{ post.user.username if post.user else 'Unknown' }}
+                </a>
+                <span class="hidden sm:inline text-neutral-600">·</span>
+                <div class="text-neutral-500 flex flex-wrap items-center gap-1">
+                  <span class="bg-neutral-800 text-neutral-300 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
+                    {{ post.category.name if post.category else 'Uncategorized' }}
+                  </span>
+                  <span>· {{ post.created_at.strftime('%b %d, %Y') }}</span>
+                  {% if post.version_number %}
+                    <span>· <span class="text-blue-400 font-mono">v{{ post.version_number }}</span></span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="relative shrink-0">
+              <button onclick="this.nextElementSibling.classList.toggle('hidden')" class="text-neutral-500 hover:text-neutral-200 p-1 rounded hover:bg-neutral-800 transition-colors">
+                <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
+              </button>
+
+              <div class="hidden absolute right-0 mt-1 w-48 bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl z-50 p-1.5 space-y-1">
+                {% if session.get('is_admin', False) %}
+                  <p class="text-[9px] uppercase tracking-wider text-neutral-500 font-bold px-2 py-1">Post Actions</p>
+                  <form method="POST" action="/admin/posts/toggle-lock/{{ post.id }}" onsubmit="return confirm('Toggle lock status?');">
+                    <button class="w-full text-left px-2.5 py-1.5 text-xs rounded hover:bg-neutral-800 text-yellow-500 transition">
+                      <i class="fa-solid fa-lock w-4"></i> {% if post.is_locked %}Unlock{% else %}Lock{% endif %} Post
+                    </button>
+                  </form>
+                  <form method="POST" action="/admin/posts/delete/{{ post.id }}" onsubmit="return confirm('Permanently delete post?');">
+                    <button class="w-full text-left px-2.5 py-1.5 text-xs rounded hover:bg-neutral-800 text-red-500 transition">
+                      <i class="fa-solid fa-trash w-4"></i> Delete Post
+                    </button>
+                  </form>
+                  <div class="border-t border-neutral-800 my-1"></div>
+                  <p class="text-[9px] uppercase tracking-wider text-neutral-500 font-bold px-2 py-1">User Actions</p>
+                  <form method="POST" action="/admin/users/toggle-ban/{{ post.user.id }}" onsubmit="return confirm('Change user status?');">
+                    <button class="w-full text-left px-2.5 py-1.5 text-xs rounded hover:bg-neutral-800 text-yellow-500 transition">
+                      <i class="fa-solid fa-ban w-4"></i> Ban Status
+                    </button>
+                  </form>
+                {% else %}
+                  <a href="{{ url_for('report_content', target_type='user', target_id=post.user.id, return_post=post.id) }}" class="block px-2.5 py-1.5 text-xs rounded hover:bg-neutral-800 transition">Report User</a>
+                  <a href="{{ url_for('report_content', target_type='post', target_id=post.id, return_post=post.id) }}" class="block px-2.5 py-1.5 text-xs rounded hover:bg-neutral-800 transition">Report Post</a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <h1 class="text-xl md:text-2xl font-bold tracking-tight text-neutral-50 leading-snug">
+              {{ post.title }}
+            </h1>
+            <div class="text-xs text-amber-400 font-medium flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-exclamation text-[10px]"></i>
+              <span>{{ post.feedback_required or 'Feedback requested' }}</span>
+            </div>
+          </div>
+
+          {% if post.image_path %}
+            <div class="bg-neutral-950 border border-neutral-800 rounded-lg overflow-hidden max-h-[500px] flex items-center justify-center">
+              <img src="{{ url_for('static', filename=post.image_path) }}" alt="{{ post.title }}" class="w-full h-full object-contain" />
+            </div>
+          {% endif %}
+
+          <div class="bg-neutral-950/60 border border-neutral-800/80 rounded-xl p-3.5 space-y-3.5">
+            <div>
+              <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-wide mb-1">Project Context</h3>
+              <p class="text-sm text-neutral-300 leading-relaxed">{{ post.context }}</p>
+            </div>
+            <div class="border-t border-neutral-900 pt-3">
+              <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-wide mb-1">Feedback Requested</h3>
+              <p class="text-sm text-neutral-300 leading-relaxed">{{ post.feedback }}</p>
+            </div>
+            
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-neutral-900">
+              <div class="flex items-center gap-2">
+                {% if project_timeline %}
+                  <div class="relative flex items-center">
+                    <i class="fa-solid fa-clock-rotate-left absolute left-2.5 text-[10px] text-neutral-500 pointer-events-none"></i>
+                    <select onchange="window.location.href='/post/' + this.value" class="appearance-none rounded-md border border-neutral-800 bg-neutral-950 pl-7 pr-7 py-1 text-[11px] font-medium text-neutral-300 hover:text-neutral-100 hover:border-neutral-700 focus:outline-none cursor-pointer transition">
+                      {% for timeline_post in project_timeline %}
+                        <option value="{{ timeline_post.id }}" {% if timeline_post.id == post.id %}selected{% endif %}>
+                          v{{ timeline_post.version_number }} {% if timeline_post.id == post.id %}(Current){% endif %}
+                        </option>
+                      {% endfor %}
+                    </select>
+                    <i class="fa-solid fa-chevron-down absolute right-2.5 text-[8px] text-neutral-500 pointer-events-none"></i>
+                  </div>
+                {% endif %} 
+                
+                {% if post.link %}
+                  <a href="{{ post.link }}" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-neutral-800 hover:bg-neutral-700 text-[11px] font-semibold text-blue-400 hover:text-blue-300 rounded-md border border-neutral-700/40 transition">
+                    <span>Visit Link</span> 
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                  </a>
+                {% endif %}
+              </div>
+
+              {% if session.get('user_id') == post.user_id %}
+                <div class="flex items-center gap-1.5">
+                  <a href="{{ url_for('edit_post', post_id=post.id) }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-neutral-100 rounded-md text-[11px] font-medium transition">
+                    <i class="fa-solid fa-pen-to-square text-neutral-500"></i>
+                    <span>Edit</span>
+                  </a>
+                  {% if project_timeline %}
+                    <a href="{{ url_for('update_post', post_id=post.id) }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-950/40 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-900/50 rounded-md text-[11px] font-semibold transition">
+                      <i class="fa-solid fa-code-branch"></i>
+                      <span>Version +</span>
+                    </a>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="w-full flex items-center gap-2 pt-1">
+            <form class="vote-form" data-post-id="{{ post.id }}" action="{{ url_for('vote', post_id=post.id) }}" method="post">
+              <div class="flex items-center gap-2.5 select-none bg-neutral-950 border border-neutral-800/80 px-2.5 py-1 rounded-full text-xs text-neutral-400">
+                <button class="vote-btn up {% if user_vote and user_vote.vote == 1 %} text-blue-500 {% else %} text-neutral-500 hover:text-neutral-300 {% endif %} transition-colors" type="button" data-value="1" {% if not session.get("user_id") %} disabled {% endif %}>
+                  <i class="fa-solid fa-circle-up text-sm"></i>
+                </button>
+                <span class="vote-count text-neutral-200 font-bold font-mono">
+                  {{ post_score if post_score != 0 else '0' }}
+                </span>
+                <button class="vote-btn down {% if user_vote and user_vote.vote == -1 %} text-orange-500 {% else %} text-neutral-500 hover:text-neutral-300 {% endif %} transition-colors" type="button" data-value="-1" {% if not session.get("user_id") %} disabled {% endif %}>
+                  <i class="fa-solid fa-circle-down text-sm"></i>
+                </button>
+              </div>
+            </form>
+
+            <div class="flex items-center gap-1.5 select-none bg-neutral-950 border border-neutral-800/80 px-3 py-1 rounded-full text-xs text-neutral-400 font-mono font-medium">
+              <i class="fa-regular fa-comment text-[13px]"></i>
+              <span>{{ critiques|length }}</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="bg-neutral-900 border border-neutral-800/90 rounded-xl p-4 space-y-3">
+          <div class="text-xs font-bold text-neutral-400 uppercase tracking-wider">Add a constructive critique</div>
+          <form class="w-full space-y-2.5" method="post" action="{{ url_for('submit_critique', post_id=post.id) }}">
+            <textarea name="critique" required class="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-sm text-neutral-100 placeholder:text-neutral-600 resize-none focus:outline-none focus:border-neutral-700 transition" placeholder="Remember to explain why things work or don't..." rows="3" oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px';"></textarea>
+            <div class="flex items-center justify-between gap-2">
+              <p class="text-[11px] text-neutral-500 leading-tight">Be specific, descriptive, and respectful.</p>
+              <button type="submit" class="px-3 py-1.5 bg-orange-600 text-neutral-950 text-xs font-bold rounded-md hover:bg-orange-500 transition shrink-0">
+                Post Critique
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="pt-2 border-t border-neutral-900">
+          <h2 class="text-base font-bold text-neutral-400 uppercase tracking-wide">Critique Feed Thread</h2>
+        </div>
+
+        {% macro render_comment(critique, depth=0) %}
+          {% if depth < 5 %}
+            <div class="flex gap-x-2 md:gap-x-3 mt-4 group">
+              
+              <div class="flex flex-col items-center shrink-0">
+                <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-full overflow-hidden select-none bg-neutral-800 border border-neutral-700/50 flex items-center justify-center font-bold text-[9px] text-neutral-400">
+                  {% if critique.user and critique.user.profile_pic %}
+                    <img src="{{ url_for('static', filename=critique.user.profile_pic) }}" alt="{{ critique.user.username }}'s avatar" class="w-full h-full object-cover" />
+                  {% elif critique.user %}
+                    {{ critique.user.username[0] | upper }}
+                  {% else %}
+                    A
+                  {% endif %}
+                </div>
+                <div class="w-0.5 flex-1 bg-neutral-800/80 group-hover:bg-neutral-700/50 transition-colors mt-2 mb-1"></div>
+              </div>
+
+              <div class="flex-1 min-w-0 space-y-1">
+                
+                <div class="flex items-center justify-between">
+                  <div class="text-xs text-neutral-400 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                    <a href="{{ url_for('profile', user_id=critique.user.id) if critique.user else '#' }}" class="font-bold text-neutral-200 hover:underline">
+                      {{ critique.user.username if critique.user else 'Anonymous' }}
+                    </a>
+                    {% if critique.user and post.user and critique.user.username == post.user.username %}
+                      <span class="text-[9px] font-extrabold bg-blue-500/10 text-blue-400 border border-blue-500/20 px-1 rounded">OP</span>
+                    {% endif %}
+                    <span class="text-neutral-600 text-[10px]">·</span>
+                    <span class="text-neutral-500 text-[11px]">{{ critique.created_at.strftime('%b %d, %H:%M') }}</span>
+                  </div>
+
+                  <div class="relative">
+                    <button class="p-1 text-neutral-500 hover:text-neutral-300 rounded" onclick="toggleMenu(this)">
+                      <i class="fa-solid fa-ellipsis text-xs"></i>
+                    </button>
+
+                    <div class="hidden absolute right-0 mt-0.5 w-40 bg-neutral-950 border border-neutral-800 rounded shadow-xl z-50 p-1">
+                      {% if session.get('is_admin') %}
+                        <form method="POST" action="{{ url_for('admin_delete_critique', critique_id=critique.id) }}">
+                          <button type="submit" class="w-full text-left px-2.5 py-1.5 text-xs rounded hover:bg-neutral-900 text-red-400" onclick="return confirm('Delete this critique?');">
+                            Delete Critique
+                          </button>
+                        </form>
+                      {% else %}
+                        {% if critique.user and critique.user.id != session.get('user_id') %}
+                          <a href="{{ url_for('report_content', target_type='user', target_id=critique.user.id, return_post=critique.post_id) }}" class="block px-2.5 py-1.5 text-xs rounded hover:bg-neutral-900">Report User</a>
+                          <a href="{{ url_for('report_content', target_type='comment', target_id=critique.id, return_post=critique.post_id) }}" class="block px-2.5 py-1.5 text-xs rounded hover:bg-neutral-900">Report Critique</a>
+                        {% endif %}
+                        {% if critique.user and critique.user.id == session.get('user_id') %}
+                          <form method="POST" action="{{ url_for('delete_critique', critique_id=critique.id) }}">
+                            <button type="submit" class="px-2.5 py-1.5 text-red-400 hover:bg-neutral-900 rounded text-xs text-left w-full flex items-center gap-1.5" onclick="return confirm('Delete comment?');">
+                              <i class="fa-solid fa-trash text-[9px]"></i> Delete
+                            </button>
+                          </form>
+                        {% endif %}
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+                <p class="text-sm text-neutral-200 leading-relaxed pr-1 whitespace-pre-line">{{ critique.content }}</p>
+
+                <div class="flex flex-col items-start pt-0.5">
+                  <button class="text-xs text-neutral-500 hover:text-neutral-300 inline-flex items-center gap-1 py-1 px-1.5 rounded hover:bg-neutral-900 transition" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                    <i class="fa-solid fa-reply text-[10px]"></i> 
+                    <span>Reply</span>
+                  </button>
+
+                  <form method="POST" action="{{ url_for('submit_critique', post_id=critique.post_id) }}" class="hidden w-full mt-2 bg-neutral-900 p-2 rounded-lg border border-neutral-800">
+                    <input type="hidden" name="parent_id" value="{{ critique.id }}">
+                    <div class="flex items-center gap-2">
+                      <input type="text" name="critique" required placeholder="Write a public reply..." class="flex-1 bg-neutral-950 text-xs p-2 rounded border border-neutral-800 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-neutral-700">
+                      <button type="submit" class="bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded text-[11px] text-white font-bold transition">Send</button>
+                    </div>
+                  </form>
+                </div>
+
+                {% if critique.replies %}
+                  <div class="mt-2">
+                    <button class="text-[11px] font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1" onclick="toggleReplies(this)">
+                      <i class="fa-solid fa-square-plus text-[10px]"></i>
+                      <span>Show replies ({{ critique.replies|length }})</span>
+                    </button>
+                    <div class="mt-1 border-none replies-container hidden space-y-1">
+                      {% for reply in critique.replies %}
+                        {{ render_comment(reply, depth + 1) }}
+                      {% endfor %}
+                    </div>
+                  </div>
+                {% endif %}
+
+              </div>
+            </div>
+          {% endif %}
+        {% endmacro %}
+
+        <div class="space-y-1">
+          {% for critique in critiques %}
+            {{ render_comment(critique) }}
+          {% else %}
+            <div class="text-center py-8 border border-dashed border-neutral-800 rounded-xl">
+              <p class="text-xs text-neutral-500">No layout critiques added yet. Be the first to blueprint logic!</p>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <aside class="w-full md:w-1/3 space-y-4">
+        
+        <div class="bg-neutral-900 border border-neutral-800/80 rounded-xl p-4 transition-all hover:border-neutral-800">
+          <h3 class="text-xs font-bold text-neutral-200 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-gavel text-orange-500/80 text-[11px]"></i>
+            <span>{{ post.category.name if post.category else 'Category' }} Guidelines</span>
+          </h3>
+          
+          {% if post.category and post.category.rules %}
+            <ul class="text-xs text-neutral-400 space-y-2.5">
+              {% for rule in post.category.rules.splitlines() %}
+                {% if rule.strip() %}
+                  <li class="flex items-start gap-2">
+                    <i class="fa-solid fa-chevron-right text-[8px] text-neutral-600 mt-1 shrink-0"></i>
+                    <span>{{ rule }}</span>
+                  </li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="flex items-center gap-2 text-neutral-500 text-xs italic py-1">
+              <i class="fa-regular fa-folder-open text-[11px]"></i>
+              <span>No specific rules listed for this category.</span>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="bg-neutral-900 border border-neutral-800/80 rounded-xl p-4 transition-all hover:border-neutral-800">
+          <h3 class="text-xs font-bold text-neutral-200 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-pen-to-square text-emerald-500/80 text-[11px]"></i>
+            <span>Review Guidelines</span>
+          </h3>
+          <ul class="text-xs text-neutral-400 space-y-2.5">
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-bullseye text-[10px] text-neutral-600 mt-0.5 shrink-0"></i>
+              <span>Focus on the requested feedback.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-comment-medical text-[10px] text-neutral-600 mt-0.5 shrink-0"></i>
+              <span>Explain <span class="text-neutral-300 font-medium">why</span>, not just what.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-quote-right text-[10px] text-neutral-600 mt-0.5 shrink-0"></i>
+              <span>Be respectful and specific.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-ban text-[10px] text-neutral-600 mt-0.5 shrink-0"></i>
+              <span>Avoid generic opinions.</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="bg-neutral-900/40 border border-neutral-800/50 rounded-xl p-3.5 text-[10px] text-neutral-500 space-y-1.5 tracking-wide">
+          <div class="flex items-center gap-1.5 text-neutral-400 font-medium">
+            <i class="fa-solid fa-earth-americas text-neutral-600 text-[10px]"></i>
+            <span>All critiques are public and attributed.</span>
+          </div>
+          <div class="text-neutral-600">
+            Critique, Inc. © 2026. All rights reserved.
+          </div>
+        </div>
+
+      </aside>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/post.js') }}"></script>
+    <script>
+      function toggleMenu(btn) {
+        const menu = btn.nextElementSibling;
+        document.querySelectorAll('.relative .absolute').forEach(m => {
+          if (m !== menu) m.classList.add('hidden');
+        });
+        menu.classList.toggle('hidden');
+      }
+      function toggleReplies(btn) {
+        const container = btn.nextElementSibling;
+        container.classList.toggle('hidden');
+        
+        // Find icons inside toggle buttons
+        const icon = btn.querySelector('i');
+        if (container.classList.contains('hidden')) {
+          btn.querySelector('span').textContent = `Show replies (${container.children.length})`;
+          if(icon) icon.className = "fa-solid fa-square-plus text-[10px]";
+        } else {
+          btn.querySelector('span').textContent = 'Hide replies';
+          if(icon) icon.className = "fa-solid fa-square-minus text-[10px]";
+        }
+      }
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.relative')) {
+          document.querySelectorAll('.relative .absolute').forEach(m => m.classList.add('hidden'));
+        }
+      });
+    </script>
+  </body>
+</html>

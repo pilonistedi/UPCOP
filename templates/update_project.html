@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Update Project · Critique</title>
+    <link rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="/static/output.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  </head>
+  <body class="bg-neutral-950 text-neutral-100 antialiased min-h-screen">
+
+    <header class="bg-neutral-900/50 backdrop-blur-md border-b border-neutral-800/60 fixed top-0 left-0 right-0 z-50">
+      <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+        <a href="{{ url_for('feed') }}"
+           class="inline-flex items-center gap-2 hover:opacity-90 transition-opacity">
+
+          <img
+            src="{{ url_for('static', filename='images/logo.png') }}"
+            alt="Critique"
+            class="h-7 w-auto"
+          >
+
+          <span class="text-base font-extrabold text-neutral-100 tracking-tight">
+            Critique
+          </span>
+        </a>
+
+        <a href="{{ url_for('feed') }}"
+           class="text-xs text-neutral-400 hover:text-neutral-200 transition-colors
+                  inline-flex items-center gap-1.5 font-medium group">
+          <i class="fa-solid fa-arrow-left text-[10px]
+                    transform group-hover:-translate-x-0.5 transition-transform"></i>
+          <span>Back to Feed</span>
+        </a>
+      </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 pt-24 pb-16 flex flex-col md:flex-row gap-6">
+      
+      <section class="md:flex-1 flex flex-col gap-6">
+        <div class="bg-neutral-900 border border-neutral-800/80 rounded-xl p-6 shadow-2xl">
+          
+          <header class="mb-5 border-b border-neutral-800/60 pb-4">
+            <span class="text-[10px] uppercase font-bold tracking-wider text-emerald-500 block mb-1">
+              Project Track: {{ project_name }}
+            </span>
+            <h1 class="text-lg font-bold tracking-tight text-neutral-100">
+              Push an Update to "{{ origin_post.title }}"
+            </h1>
+          </header>
+
+          <form
+            class="space-y-4"
+            action="{{ url_for('update_post', post_id=origin_post.id) }}"
+            method="POST"
+            enctype="multipart/form-data"
+          >
+            <div>
+              <label class="block text-xs font-medium text-neutral-400 mb-1.5" for="version">Target Version Increment</label>
+              <div class="relative w-36">
+                <input
+                  type="text"
+                  id="version"
+                  name="version"
+                  value="v{{ suggested_version }}"
+                  disabled
+                  class="w-full bg-neutral-950/60 border border-neutral-800/80 rounded-lg pl-8.5 pr-3 py-2 text-xs text-neutral-400 font-mono select-none"
+                />
+                <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                  <i class="fa-solid fa-code-branch text-neutral-600 text-[10px]"></i>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-neutral-400 mb-1.5" for="title">Update Title</label>
+              <div class="relative">
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  required
+                  placeholder="e.g., Reworked layout hierarchy and fixed context spacing"
+                  class="w-full bg-neutral-950 border border-neutral-800 rounded-lg pl-8.5 pr-3 py-2 text-xs text-neutral-100 placeholder-neutral-600 focus:outline-none focus:border-neutral-700 transition"
+                />
+                <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                  <i class="fa-solid fa-heading text-neutral-600 text-[10px]"></i>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-neutral-400 mb-1.5" for="context">What Changed / Release Context</label>
+              <textarea
+                id="context"
+                name="context"
+                rows="4"
+                required
+                placeholder="Briefly describe what milestone was reached or what adjustments were introduced in this iteration loop..."
+                class="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-xs text-neutral-100 placeholder-neutral-600 resize-none focus:outline-none focus:border-neutral-700 transition leading-relaxed"
+              ></textarea>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-neutral-400 mb-1.5" for="feedback">Specific Feedback Targets</label>
+              <textarea
+                id="feedback"
+                name="feedback"
+                rows="4"
+                required
+                placeholder="What precise parts do you need peer evaluation on right now? (e.g., typography contrast ratios, layout flow controls, state components...)"
+                class="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-xs text-neutral-100 placeholder-neutral-600 resize-none focus:outline-none focus:border-neutral-700 transition leading-relaxed"
+              ></textarea>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-neutral-400 mb-1.5" for="link">Updated Interactive Preview Link <span class="text-neutral-600 font-normal ml-0.5">(optional)</span></label>
+              <div class="relative">
+                <input
+                  type="url"
+                  id="link"
+                  name="link"
+                  placeholder="https://v2.yourproject.com or new-repo-commit-link"
+                  class="w-full bg-neutral-950 border border-neutral-800 rounded-lg pl-8.5 pr-3 py-2 text-xs text-neutral-100 placeholder-neutral-600 focus:outline-none focus:border-neutral-700 transition"
+                />
+                <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                  <i class="fa-solid fa-link text-neutral-600 text-[10px]"></i>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-neutral-400 mb-1.5">
+                Upload New Build Frame/Screenshot <span class="text-neutral-600 font-normal ml-0.5">(optional)</span>
+              </label>
+              <label
+                class="flex flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-neutral-800 bg-neutral-950 px-4 py-5 text-center cursor-pointer hover:border-neutral-700 hover:bg-neutral-900/40 transition group"
+              >
+                <i class="fa-regular fa-image text-neutral-600 text-base group-hover:text-neutral-400 transition-colors"></i>
+                <div class="text-xs text-neutral-400">
+                  <span class="font-medium text-neutral-300 group-hover:text-neutral-200">Drop a revision screenshot</span> or click to upload
+                </div>
+                <span class="text-[10px] text-neutral-600 tracking-wider uppercase">PNG, JPG, WEBP</span>
+                <input type="file" id="image" name="image" accept="image/*" class="hidden" />
+              </label>
+            </div>
+
+            <div class="pt-2 flex items-center justify-end gap-3">
+              <a 
+                href="{{ url_for('feed') }}"
+                class="px-4 py-2 rounded-lg border border-neutral-800 text-xs font-medium text-neutral-400 hover:text-neutral-200 hover:border-neutral-700 hover:bg-neutral-900/50 transition-all text-center min-w-[80px]"
+              >
+                Cancel
+              </a>
+              <button
+                type="submit"
+                class="px-4 py-2 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-950 text-xs font-semibold transition-all shadow-sm flex items-center justify-center gap-1.5 min-w-[120px]"
+              >
+                <span>Publish Update</span>
+                <i class="fa-solid fa-plus text-[9px]"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <aside class="md:w-80 space-y-4 shrink-0">
+        <div class="rounded-xl border border-neutral-800/80 bg-neutral-900 p-5 shadow-xl">
+          <div class="flex items-center gap-1.5 text-xs text-neutral-400 font-bold uppercase tracking-wider mb-4 pb-2 border-b border-neutral-800/60">
+            <i class="fa-solid fa-clock-rotate-left text-[10px] text-neutral-500"></i>
+            <span>Repository History Chain</span>
+          </div>
+
+          {% if project_history %}
+            <div class="relative border-l border-neutral-800 pl-4 ml-2 space-y-6">
+              {% for historical_post in project_history %}
+                <div class="relative group">
+                  <div class="absolute -left-[21px] top-1 w-2 h-2 rounded-full border border-neutral-800 bg-neutral-950 group-hover:border-emerald-500 transition-colors"></div>
+                  
+                  <div class="flex items-center justify-between gap-2 mb-1">
+                    <span class="text-[10px] font-mono font-bold text-emerald-500 bg-emerald-500/5 px-1.5 py-0.5 rounded border border-emerald-500/10">
+                      v{{ historical_post.version_number }}
+                    </span>
+                    <span class="text-[10px] text-neutral-500 font-medium">
+                      {{ historical_post.created_at.strftime('%b %d, %Y') if historical_post.created_at else 'Legacy Build' }}
+                    </span>
+                  </div>
+
+                  <h4 class="text-xs font-semibold text-neutral-200 group-hover:text-neutral-100 transition-colors line-clamp-1">
+                    {{ historical_post.title }}
+                  </h4>
+
+                  <p class="mt-1 text-[11px] leading-relaxed text-neutral-400 line-clamp-3">
+                    {{ historical_post.context or "No context written for this build iteration." }}
+                  </p>
+
+                  {% if historical_post.link %}
+                    <div class="mt-1.5 flex">
+                      <a
+                        href="{{ historical_post.link }}"
+                        target="_blank"
+                        class="text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors inline-flex items-center gap-0.5 group"
+                      >
+                        <span>Inspect Build Source</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[8px] transform group-hover:translate-x-0.5 transition-transform"></i>
+                      </a>
+                    </div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-xs text-neutral-500 text-center py-4 leading-relaxed">
+              No previous builds track recorded for this project cluster.
+            </p>
+          {% endif %}
+        </div>
+      </aside>
+    </main>
+  </body>
+</html>

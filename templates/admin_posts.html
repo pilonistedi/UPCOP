@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin | Posts</title>
+    <link rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='favicon.ico') }}">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='output.css') }}"
+    />
+    <style>
+      .hidden-col {
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body class="bg-neutral-950 text-neutral-200 min-h-screen">
+    <header
+      class="bg-neutral-900 border-b border-neutral-800 fixed top-0 left-0 right-0 z-40"
+    >
+      <div
+        class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between"
+      >
+        <span class="text-sm font-semibold">Admin · Posts</span>
+        <a
+          href="{{ url_for('admin_dashboard') }}"
+          class="text-sm text-neutral-400 hover:text-neutral-200"
+        >
+          Back to Dashboard
+        </a>
+      </div>
+    </header>
+
+    <main class="w-full mx-auto px-6 pt-24 pb-16 space-y-6">
+      <div
+        class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-neutral-900/40 p-3 rounded-lg border border-neutral-800/60 mb-4"
+      >
+        <!-- Left Side: Filters & Search Bar Group -->
+        <div
+          class="flex flex-col sm:flex-row sm:items-center gap-3 flex-1 max-w-3xl"
+        >
+          <!-- Search Input (Expands beautifully) -->
+          <div class="relative flex-1 min-w-[240px]">
+            <div
+              class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-neutral-500 text-sm"
+            >
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <input
+              type="text"
+              placeholder="Search users, posts, or keywords..."
+              class="w-full bg-neutral-900 border border-neutral-800 pl-9 pr-4 py-2 rounded text-sm text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-neutral-700 transition-colors"
+            />
+          </div>
+
+          <!-- Category Dropdown -->
+          <div class="relative shrink-0">
+            <select
+              class="appearance-none bg-neutral-900 border border-neutral-800 pl-3 pr-8 py-2 rounded text-sm text-neutral-200 focus:outline-none focus:border-neutral-700 cursor-pointer w-full sm:w-auto"
+            >
+              <option>All Categories</option>
+              {% for category in categories %}
+              <option>{{ category.name }}</option>
+              {% endfor %}
+            </select>
+            <div
+              class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-neutral-500 text-xs"
+            >
+              <i class="fa-solid fa-chevron-down"></i>
+            </div>
+          </div>
+
+          <!-- Sorting Dropdown -->
+          <div class="relative shrink-0">
+            <select
+              class="appearance-none bg-neutral-900 border border-neutral-800 pl-3 pr-8 py-2 rounded text-sm text-neutral-200 focus:outline-none focus:border-neutral-700 cursor-pointer w-full sm:w-auto"
+            >
+              <option>Newest</option>
+              <option>Most Reported</option>
+              <option>Most Commented</option>
+            </select>
+            <div
+              class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-neutral-500 text-xs"
+            >
+              <i class="fa-solid fa-chevron-down"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Far Right Side: Column Visibility Toggles -->
+        <div
+          class="flex items-center gap-2 shrink-0 lg:border-l lg:border-neutral-800 lg:pl-4"
+        >
+          <span
+            class="text-xs font-medium text-neutral-500 mr-1 flex items-center gap-1"
+          >
+            <i class="fa-solid fa-table-columns"></i> Columns:
+          </span>
+
+          <button
+            onclick="toggleCol('col-category')"
+            class="px-2.5 py-1 bg-neutral-800 border border-neutral-700/50 rounded text-xs text-neutral-300 hover:bg-neutral-700 hover:text-white transition-colors"
+          >
+            Category
+          </button>
+
+          <button
+            onclick="toggleCol('col-versions')"
+            class="px-2.5 py-1 bg-neutral-800 border border-neutral-700/50 rounded text-xs text-neutral-300 hover:bg-neutral-700 hover:text-white transition-colors"
+          >
+            Versions
+          </button>
+
+          <button
+            onclick="toggleCol('col-created')"
+            class="px-2.5 py-1 bg-neutral-800 border border-neutral-700/50 rounded text-xs text-neutral-300 hover:bg-neutral-700 hover:text-white transition-colors"
+          >
+            Created
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto border border-neutral-800 rounded-lg">
+        <table class="w-full text-xs border-collapse table-fixed">
+          <thead class="bg-neutral-900">
+            <tr class="border-b border-neutral-800">
+              <th class="text-center px-3 py-2 text-neutral-400 w-[60px]">
+                ID
+              </th>
+              <th class="text-center px-3 py-2 text-neutral-400 w-[220px]">
+                Title
+              </th>
+              <th class="text-center px-3 py-2 text-neutral-400 w-[100px]">
+                Author
+              </th>
+              <th
+                class="col-category hidden-col text-center px-3 py-2 text-neutral-400 w-[150px]"
+              >
+                Category
+              </th>
+              <th class="text-center px-3 py-2 text-neutral-400 w-[90px]">
+                Comments
+              </th>
+              <th
+                class="col-versions hidden-col text-center px-3 py-2 text-neutral-400 w-[90px]"
+              >
+                Versions
+              </th>
+              <th class="text-center px-3 py-2 text-neutral-400 w-[80px]">
+                Reports
+              </th>
+              <th class="text-center px-3 py-2 text-neutral-400 w-[80px]">
+                Status
+              </th>
+              <th
+                class="col-created hidden-col text-center px-3 py-2 text-neutral-400 w-[120px]"
+              >
+                Created
+              </th>
+              <th class="text-center px-3 py-2 text-neutral-400 w-[180px]">
+                Actions
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for post in posts %}
+            <tr class="border-b border-neutral-800 hover:bg-neutral-900">
+              <td class="px-3 py-2 text-center">{{ post.id }}</td>
+
+              <!-- Title: truncate + ellipsis + hover -->
+              <td
+                class="px-3 py-2 font-medium truncate text-center"
+                title="{{ post.title }}"
+              >
+                {{ post.title }}
+              </td>
+
+              <td class="px-3 py-2 text-center text-neutral-400 truncate">
+                {{ post.user.username if post.user else "Unknown" }}
+              </td>
+
+              <td
+                class="col-category hidden-col px-3 py-2 text-center text-neutral-400 truncate"
+              >
+                {{ post.category.name if post.category else "Uncategorized" }}
+              </td>
+
+              <td class="px-3 py-2 text-center">{{ post.critiques|length }}</td>
+
+              <td class="col-versions hidden-col px-3 py-2 text-center">
+                {{ post.versions|length }}
+              </td>
+
+              <td class="px-3 py-2 text-center text-red-400">
+                {{ post.reports }}
+              </td>
+
+              <td
+                class="px-3 py-2 whitespace-nowrap text-center {% if post.is_locked %}text-red-400{% else %}text-green-400{% endif %}"
+              >
+                {% if post.is_locked %}Locked{% else %}Active{% endif %}
+              </td>
+
+              <td
+                class="col-created hidden-col px-3 py-2 text-center text-neutral-400 whitespace-nowrap"
+              >
+                {{ post.created_at.strftime('%b %d, %Y') }}
+              </td>
+
+              <!-- Actions: never wrap -->
+              <td
+                class="px-3 py-2 flex items-center justify-center gap-2 whitespace-nowrap"
+              >
+                <form
+                  method="POST"
+                  action="/admin/posts/toggle-lock/{{ post.id }}"
+                  onsubmit="
+                    return confirm(
+                      'Are you sure you want to toggle lock status for this post?',
+                    );
+                  "
+                >
+                  <button
+                    class="px-2 py-1 text-xs bg-yellow-600 rounded hover:bg-yellow-500"
+                  >
+                    {% if post.is_locked %}Unlock{% else %}Lock{% endif %}
+                  </button>
+                </form>
+
+                <form
+                  method="POST"
+                  action="/admin/posts/delete/{{ post.id }}"
+                  onsubmit="
+                    return confirm(
+                      'Are you sure you want to delete this post?',
+                    );
+                  "
+                >
+                  <button
+                    class="px-2 py-1 text-xs bg-red-600 rounded hover:bg-red-500"
+                  >
+                    Delete
+                  </button>
+                </form>
+
+                <a
+                  href="{{ url_for('view_post', post_id=post.id) }}"
+                  class="px-2 py-1 text-xs bg-blue-600 rounded hover:bg-blue-500"
+                >
+                  View
+                </a>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="10" class="px-3 py-4 text-center text-neutral-400">
+                No posts found.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </main>
+    <script>
+      function toggleCol(colClass) {
+        document.querySelectorAll("." + colClass).forEach((el) => {
+          el.classList.toggle("hidden-col");
+        });
+      }
+    </script>
+  </body>
+</html>

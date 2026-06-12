@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Suggestions · Admin · Critique</title>
+    <link rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='favicon.ico') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='output.css') }}"
+    />
+  </head>
+
+  <body class="bg-neutral-950 text-neutral-100">
+    <!-- HEADER -->
+    <header class="border-b border-neutral-800 bg-neutral-900">
+      <div
+        class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between"
+      >
+        <h1 class="text-sm font-semibold">Admin · Suggestions</h1>
+
+        <a
+          href="{{ url_for('admin_dashboard') }}"
+          class="text-sm text-neutral-400 hover:text-neutral-200"
+        >
+          Back
+        </a>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="max-w-6xl mx-auto px-4 py-10">
+      <div class="overflow-x-auto border border-neutral-800 rounded">
+        <table class="w-full text-sm border-collapse">
+          <thead class="bg-neutral-900 border-b border-neutral-800">
+            <tr class="text-left text-neutral-400 text-xs">
+              <th class="px-3 py-2 w-14">ID</th>
+              <th class="px-3 py-2">Message</th>
+              <th class="px-3 py-2 w-64">Email</th>
+              <th class="px-3 py-2 w-24 text-center">Subscribed</th>
+              <th class="px-3 py-2 w-32">Submitted</th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-neutral-800">
+            {% for s in suggestions %}
+            <tr class="hover:bg-neutral-900/50">
+              <!-- ID -->
+              <td class="px-3 py-2 text-neutral-500">{{ s.id }}</td>
+
+              <!-- MESSAGE -->
+              <td class="px-3 py-2 text-neutral-100 leading-relaxed">
+                {{ s.message }}
+              </td>
+
+              <!-- EMAIL -->
+              <td class="px-3 py-2 text-neutral-300">
+                {% if s.email %} {{ s.email }} {% else %}
+                <span class="text-neutral-600 italic">—</span>
+                {% endif %}
+              </td>
+
+              <!-- SUBSCRIBED -->
+              <td class="px-3 py-2 text-center">
+                {% if s.subscribed %}
+                <span class="text-green-400 text-xs">Yes</span>
+                {% else %}
+                <span class="text-neutral-500 text-xs">No</span>
+                {% endif %}
+              </td>
+
+              <!-- DATE -->
+              <td class="px-3 py-2 text-neutral-500 text-xs">
+                {{ s.created_at.strftime("%Y-%m-%d") }}
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td
+                colspan="5"
+                class="px-4 py-10 text-center text-neutral-600 text-sm"
+              >
+                No suggestions submitted yet.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </body>
+</html>

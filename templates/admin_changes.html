@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin | Upcoming Changes</title>
+    <link rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='favicon.ico') }}">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='output.css') }}"
+    />
+  </head>
+
+  <body class="bg-neutral-950 text-neutral-200 min-h-screen">
+    <!-- HEADER -->
+    <header
+      class="bg-neutral-900 border-b border-neutral-800 fixed top-0 left-0 right-0 z-40"
+    >
+      <div
+        class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between"
+      >
+        <span class="text-sm font-semibold">Admin · Upcoming Changes</span>
+
+        <a
+          href="{{ url_for('admin_dashboard') }}"
+          class="text-sm text-neutral-400 hover:text-neutral-200"
+        >
+          Back to Dashboard
+        </a>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="max-w-6xl mx-auto px-6 pt-24 pb-16 space-y-6">
+      <!-- ACTION BUTTON -->
+      <div class="flex justify-end">
+        <button
+          onclick="openModal()"
+          class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm"
+        >
+          + New Change
+        </button>
+      </div>
+
+      <!-- TABLE -->
+      <div class="overflow-x-auto border border-neutral-800 rounded-lg">
+        <table class="w-full text-sm border-collapse">
+          <thead class="bg-neutral-900">
+            <tr class="border-b border-neutral-800">
+              <th class="text-left px-3 py-2 text-neutral-400">ID</th>
+              <th class="text-left px-3 py-2 text-neutral-400">Title</th>
+              <th class="text-left px-3 py-2 text-neutral-400">Status</th>
+              <th class="text-left px-3 py-2 text-neutral-400">Priority</th>
+              <th class="text-left px-3 py-2 text-neutral-400">Target</th>
+              <th class="text-left px-3 py-2 text-neutral-400">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for change in changes %}
+            <tr class="border-b border-neutral-800 hover:bg-neutral-900">
+              <td class="px-3 py-2">{{ change.id }}</td>
+
+              <td class="px-3 py-2 font-medium">{{ change.title }}</td>
+
+              <!-- STATUS -->
+              <td class="px-3 py-2">
+                <span
+                  class="text-xs px-2 py-1 rounded border {% if change.status == 'planned' %} text-yellow-400 border-yellow-500/30 {% elif change.status == 'in_progress' %} text-blue-400 border-blue-500/30 {% elif change.status == 'released' %} text-green-400 border-green-500/30 {% elif change.status == 'delayed' %} text-orange-400 border-orange-500/30 {% else %} text-red-400 border-red-500/30 {% endif %}"
+                >
+                  {{ change.status }}
+                </span>
+              </td>
+
+              <td class="px-3 py-2 text-neutral-400">{{ change.priority }}</td>
+
+              <td class="px-3 py-2 text-neutral-400">
+                {{ change.target_version or "—" }}
+              </td>
+
+              <!-- ACTIONS -->
+              <td class="px-3 py-2 space-x-3">
+                <a
+                  class="text-blue-500 hover:underline cursor-pointer"
+                  onclick="editChange(
+                    {{ change.id }},
+                    `{{ change.title }}`,
+                    `{{ change.description }}`,
+                    `{{ change.status }}`,
+                    {{ change.priority }},
+                    `{{ change.target_version or '' }}`
+                  )"
+                >
+                  Edit
+                </a>
+
+                <a
+                  href="/admin/upcoming/delete/{{ change.id }}"
+                  class="text-green-500 hover:underline"
+                  onclick="return confirm('Complete this change?');"
+                >
+                  Complete
+                </a>
+
+                <a
+                  href="/admin/upcoming/delete/{{ change.id }}"
+                  class="text-red-500 hover:underline"
+                  onclick="return confirm('Delete this change?');"
+                >
+                  Delete
+                </a>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="6" class="px-3 py-6 text-center text-neutral-500">
+                No upcoming changes found.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- MODAL -->
+    <div
+      id="modal"
+      class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50"
+    >
+      <div
+        class="bg-neutral-900 border border-neutral-800 rounded-lg w-full max-w-lg p-6"
+      >
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-semibold" id="modalTitle">
+            Add Upcoming Change
+          </h2>
+
+          <button
+            onclick="closeModal()"
+            class="text-neutral-400 hover:text-neutral-200"
+          >
+            ✕
+          </button>
+        </div>
+
+        <form method="post" class="space-y-4">
+          <input type="hidden" name="id" id="change_id" />
+
+          <input
+            type="text"
+            name="title"
+            id="title"
+            placeholder="Title"
+            class="w-full bg-neutral-950 border border-neutral-800 px-3 py-2 rounded"
+            required
+          />
+
+          <textarea
+            name="description"
+            id="description"
+            rows="4"
+            placeholder="Description"
+            class="w-full bg-neutral-950 border border-neutral-800 px-3 py-2 rounded"
+            required
+          ></textarea>
+
+          <div class="grid grid-cols-2 gap-3">
+            <select
+              name="status"
+              id="status"
+              class="bg-neutral-950 border border-neutral-800 px-3 py-2 rounded"
+            >
+              <option value="planned">Planned</option>
+              <option value="in_progress">In Progress</option>
+              <option value="delayed">Delayed</option>
+              <option value="released">Released</option>
+            </select>
+
+            <input
+              type="number"
+              name="priority"
+              id="priority"
+              placeholder="Priority (1-5)"
+              class="bg-neutral-950 border border-neutral-800 px-3 py-2 rounded"
+            />
+          </div>
+
+          <input
+            type="text"
+            name="target_version"
+            id="target_version"
+            placeholder="Target Version (optional)"
+            class="w-full bg-neutral-950 border border-neutral-800 px-3 py-2 rounded"
+          />
+
+          <div class="flex justify-end space-x-3 pt-2">
+            <button
+              type="button"
+              onclick="closeModal()"
+              class="px-4 py-2 text-sm bg-neutral-800 hover:bg-neutral-700 rounded"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              class="px-4 py-2 text-sm bg-green-600 hover:bg-green-700 rounded"
+            >
+              Save
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- SCRIPT -->
+    <script>
+      function openModal() {
+        document.getElementById("modal").classList.remove("hidden");
+        document.getElementById("modal").classList.add("flex");
+
+        document.querySelector("form").reset();
+        document.getElementById("modalTitle").innerText = "Add Upcoming Change";
+        document.getElementById("change_id").value = "";
+      }
+
+      function closeModal() {
+        document.getElementById("modal").classList.add("hidden");
+        document.getElementById("modal").classList.remove("flex");
+      }
+
+      function editChange(id, title, description, status, priority, version) {
+        openModal();
+
+        document.getElementById("modalTitle").innerText =
+          "Edit Upcoming Change";
+
+        document.getElementById("change_id").value = id;
+        document.getElementById("title").value = title;
+        document.getElementById("description").value = description;
+        document.getElementById("status").value = status;
+        document.getElementById("priority").value = priority;
+        document.getElementById("target_version").value = version;
+      }
+    </script>
+  </body>
+</html>

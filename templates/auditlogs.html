@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>System Logs · Admin</title>
+    <link rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="/static/output.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+
+  <body class="bg-neutral-950 text-neutral-100">
+    <header class="bg-neutral-900 border-b border-neutral-800">
+      <div
+        class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between"
+      >
+        <span class="text-sm font-semibold">Admin · Audit Logs</span>
+        <a
+          href="{{ url_for('admin_dashboard') }}"
+          class="text-sm text-neutral-400 hover:text-neutral-200"
+        >
+          Back to Dashboard
+        </a>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-8">
+      <div
+        class="bg-neutral-900 p-4 rounded-md mb-4 flex flex-wrap gap-3 items-end"
+      >
+        <form
+          method="get"
+          class="flex flex-wrap items-center gap-3 w-full text-sm"
+        >
+          <input
+            type="number"
+            name="actor_id"
+            placeholder="Actor ID"
+            class="px-2 py-1 rounded bg-neutral-800 text-neutral-100 focus:outline-none focus:ring-1 focus:ring-green-500"
+          />
+
+          <select
+            name="action"
+            class="px-2 py-1 rounded bg-neutral-800 text-neutral-100 focus:outline-none focus:ring-1 focus:ring-green-500"
+          >
+            <option value="">All Actions</option>
+            <option value="audit_logs_viewed">Audit Logs Viewed</option>
+            <option value="login_blocked_banned">Login Blocked (Banned)</option>
+            <option value="login_success">Login Success</option>
+            <option value="login_failed">Login Failed</option>
+            <option value="user_signup">User Signup</option>
+            <option value="critique_created">Critique Created</option>
+            <option value="post_created">Post Created</option>
+            <option value="admin_login_success">Admin Login Success</option>
+            <option value="admin_role_toggled">Admin Role Toggled</option>
+            <option value="user_ban_toggled">User Ban Toggled</option>
+            <option value="user_deleted">User Deleted</option>
+            <option value="post_lock_toggled">Post Lock Toggled</option>
+            <option value="post_deleted">Post Deleted</option>
+            <option value="logout">Logout</option>
+          </select>
+
+          <select
+            name="target_type"
+            class="px-2 py-1 rounded bg-neutral-800 text-neutral-100 focus:outline-none focus:ring-1 focus:ring-green-500"
+          >
+            <option value="">All Targets</option>
+            <option value="user">User</option>
+            <option value="post">Post</option>
+            <option value="critique">Critique</option>
+          </select>
+
+          <input
+            type="date"
+            name="start_date"
+            class="px-2 py-1 rounded bg-neutral-800 text-neutral-100 focus:outline-none focus:ring-1 focus:ring-green-500"
+          />
+
+          <select
+            name="sort"
+            class="px-2 py-1 rounded bg-neutral-800 text-neutral-100 focus:outline-none focus:ring-1 focus:ring-green-500"
+          >
+            <option value="desc">Newest First</option>
+            <option value="asc">Oldest First</option>
+          </select>
+
+          <button
+            type="submit"
+            class="px-3 py-1 border border-green-800 text-neutral-100 rounded hover:text-green-800"
+          >
+            Apply
+          </button>
+          <button
+            type="submit"
+            class="px-3 py-1 border border-orange-800 text-neutral-100 rounded hover:text-orange-800"
+          >
+            Clear Filters
+          </button>
+          <div>
+            <span class="text-neutral-500 text-xs">
+              Total Logs: {{ total_logs }}
+            </span>
+          </div>
+        </form>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="border-b border-neutral-800">
+              <th class="text-left px-3 py-2 text-neutral-400">Time</th>
+              <th class="text-left px-3 py-2 text-neutral-400">Actor</th>
+              <th class="text-left px-3 py-2 text-neutral-400">Action</th>
+              <th class="text-left px-3 py-2 text-neutral-400">Target</th>
+              <th class="text-left px-3 py-2 text-neutral-400">IP</th>
+              <th class="text-left px-3 py-2 text-neutral-400">Details</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for log in logs %}
+            <tr class="border-b border-neutral-800 hover:bg-neutral-800">
+              <td class="px-3 py-2 text-neutral-400 whitespace-nowrap">
+                {{ log.created_at.strftime("%b %d, %Y · %H:%M") }}
+              </td>
+
+              <td class="px-3 py-2">
+                {% if log.actor %} {{ log.actor.username }} {% else %}
+                <span class="text-neutral-500">System</span>
+                {% endif %}
+              </td>
+
+              <td class="px-3 py-2 font-medium">{{ log.action }}</td>
+
+              <td class="px-3 py-2 text-neutral-400">
+                {% if log.target_type and log.target_id %} {{ log.target_type }}
+                #{{ log.target_id }} {% else %} — {% endif %}
+              </td>
+
+              <td class="px-3 py-2 text-neutral-400">
+                {{ log.ip_address or "—" }}
+              </td>
+
+              <td class="px-3 py-2 text-neutral-400 max-w-xs truncate">
+                {% if log.details %} {{ log.details }} {% else %} — {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="6" class="px-3 py-6 text-center text-neutral-500">
+                No logs recorded yet.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </body>
+</html>

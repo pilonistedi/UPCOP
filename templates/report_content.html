@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Report Content · Critique</title>
+    <link rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='favicon.ico') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='output.css') }}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css" />
+  </head>
+
+  <body class="bg-neutral-950 text-neutral-200 min-h-screen flex flex-col antialiased selection:bg-red-500/20 selection:text-red-400">
+    
+    <header class="bg-neutral-900/80 backdrop-blur-md border-b border-neutral-800 fixed top-0 left-0 right-0 z-50">
+      <div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+        <a href="{{ url_for('feed') }}">
+          <span class="text-xl font-extrabold text-neutral-100 tracking-tight">Critique</span>
+        </a>
+        <a href="{{ url_for('view_post', user_id=user.id, post_id=return_post) }}" class="text-xs md:text-sm text-neutral-400 hover:text-neutral-200 transition-colors flex items-center gap-1.5">
+          <i class="fa-solid fa-arrow-left text-[11px]"></i> Back to Post
+        </a>
+      </div>
+    </header>
+
+    <div class="flex-1 w-full max-w-lg mx-auto px-4 flex items-center justify-center pt-20 pb-12">
+      <div class="w-full bg-neutral-900 border border-neutral-800/90 rounded-2xl p-5 md:p-6 shadow-2xl space-y-5">
+        
+        <div class="flex items-center gap-2.5 pb-3 border-b border-neutral-800/60">
+          <div class="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400 text-sm">
+            <i class="fa-solid fa-shield-heart"></i>
+          </div>
+          <div>
+            <h1 class="text-lg font-bold tracking-tight text-neutral-100">
+              Report {{ target_type|capitalize }}
+            </h1>
+            <p class="text-[11px] text-neutral-500 font-medium">Community Trust & Safety Safety Desk</p>
+          </div>
+        </div>
+
+        <div class="bg-neutral-950 border border-neutral-800/80 rounded-xl p-3.5 flex items-start gap-3">
+          
+          <div class="shrink-0 mt-0.5">
+            {% if target_type == "user" or (target_type == "comment" and target.user) %}
+              <div class="w-8 h-8 rounded-full overflow-hidden select-none bg-neutral-800 border border-neutral-700/60 flex items-center justify-center font-bold text-xs text-neutral-400">
+                {% set target_user = target if target_type == "user" else target.user %}
+                {% if target_user.profile_pic %}
+                  <img src="{{ url_for('static', filename=target_user.profile_pic) }}" alt="Target profile pic" class="w-full h-full object-cover" />
+                {% else %}
+                  {{ target_user.username[0] | upper }}
+                {% endif %}
+              </div>
+            {% else %}
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs border border-blue-900/40 bg-blue-950/40 text-blue-400">
+                <i class="fa-solid fa-file-lines text-sm"></i>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="min-w-0 flex-1 text-xs md:text-sm">
+            <p class="text-neutral-400 leading-relaxed">
+              {% if target_type == "post" %}
+                You are flagging a blueprint submission titled:
+                <span class="block font-bold text-neutral-200 mt-0.5 text-xs bg-neutral-900 border border-neutral-800 px-2 py-1 rounded italic truncate">
+                  "{{ target.title }}"
+                </span>
+              {% elif target_type == "comment" %}
+                You are reporting a code review/critique contribution submitted by:
+                <span class="block font-bold text-orange-400 mt-0.5 font-mono text-xs">
+                  u/{{ target.user.username if target.user else 'Anonymous' }}
+                </span>
+              {% elif target_type == "user" %}
+                You are submitting a safety profile audit review tracking target account:
+                <span class="block font-bold text-purple-400 mt-0.5 font-mono text-xs">
+                  @{{ target.username }}
+                </span>
+              {% endif %}
+            </p>
+          </div>
+        </div>
+
+        <form method="post" class="space-y-4">
+          
+          <div class="space-y-1">
+            <label class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-neutral-400">
+              <i class="fa-solid fa-list-check text-[10px] text-neutral-500"></i>
+              <span>Reason for Flag</span>
+            </label>
+            <div class="relative flex items-center">
+              <i class="fa-solid fa-circle-nodes absolute left-3 text-xs text-neutral-500 pointer-events-none"></i>
+              <select
+                name="reason"
+                required
+                class="w-full appearance-none bg-neutral-950 border border-neutral-800 hover:border-neutral-700/80 rounded-lg pl-9 pr-8 py-2 text-sm text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-red-500 transition cursor-pointer font-medium"
+              >
+                <option value="" class="text-neutral-600">Select a structural policy violation reason</option>
+                <option value="spam">Spam / Unsolicited Promotion</option>
+                <option value="harassment">Harassment / Intimidating Behaviour</option>
+                <option value="hate">Hate Speech / Verbal Abuse</option>
+                <option value="misinformation">Misinformation / Corrupted Context</option>
+                <option value="impersonation">Identity Impersonation</option>
+                <option value="other">Other / Custom Breach Rule</option>
+              </select>
+              <i class="fa-solid fa-chevron-down absolute right-3 text-[9px] text-neutral-500 pointer-events-none"></i>
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <label class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-neutral-400">
+              <i class="fa-solid fa-paragraph text-[10px] text-neutral-500"></i>
+              <span>Additional Audit Context (Optional)</span>
+            </label>
+            <textarea
+              name="description"
+              rows="4"
+              placeholder="Provide context, file snippets, links, or log behaviors that can help our moderation team identify the underlying code review violation efficiently..."
+              class="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-neutral-200 placeholder:text-neutral-600 resize-none focus:outline-none focus:border-red-500 transition leading-relaxed"
+            ></textarea>
+          </div>
+
+          <div class="bg-red-500/5 border border-red-500/10 rounded-lg p-2.5 flex items-start gap-2 text-[11px] text-neutral-400 leading-normal">
+            <i class="fa-solid fa-triangle-exclamation text-red-500/80 mt-0.5 shrink-0"></i>
+            <span>False flagging profiles or code reviews to manipulate community metrics or project scores constitutes an explicit breach of core community safety guidelines.</span>
+          </div>
+
+          <div class="pt-2">
+            <button
+              type="submit"
+              class="w-full bg-red-600 hover:bg-red-500 active:bg-red-700 text-neutral-950 text-xs font-bold uppercase tracking-wider py-2.5 rounded-lg transition shadow-md flex items-center justify-center gap-1.5 group"
+            >
+              <i class="fa-solid fa-paper-plane text-[10px] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
+              <span>Submit Ticket Report</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+  </body>
+</html>

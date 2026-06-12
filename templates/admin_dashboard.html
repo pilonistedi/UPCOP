@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin Control Center · Critique</title>
+    <link rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='favicon.ico') }}">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='output.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css"
+    />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+
+  <body class="bg-neutral-950 text-neutral-100">
+    <!-- HEADER -->
+    <header class="bg-neutral-900 border-b border-neutral-800">
+      <div
+        class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between"
+      >
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-shield-halved text-blue-400"></i>
+          <span class="text-sm font-semibold">Admin Control Center</span>
+        </div>
+
+        <div class="flex items-center gap-6">
+          <a
+            href="{{ url_for('admin_logout') }}"
+            class="text-sm text-neutral-400 hover:text-neutral-200"
+          >
+            Logout
+          </a>
+
+          <a href="/" class="text-sm text-neutral-400 hover:text-neutral-200" target="_blank">
+            Go to Site
+          </a>
+
+          <div
+            class="w-8 h-8 bg-green-300 rounded-full text-black text-xs font-bold flex items-center justify-center"
+          >
+            {{ first_letter or "A" }}
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-10 space-y-10">
+      <!-- SYSTEM SNAPSHOT -->
+      <!-- Changed md:grid-cols-4 to lg:grid-cols-5 for perfect single-row alignment -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <!-- Users Card -->
+        <div
+          class="bg-neutral-900 border border-neutral-800 rounded p-4 flex flex-col justify-between min-w-0"
+        >
+          <div class="flex items-center gap-2 text-blue-400">
+            <i class="fa-solid fa-users text-sm"></i>
+            <span class="text-xs text-neutral-400 font-medium truncate"
+              >Users</span
+            >
+          </div>
+          <div class="text-2xl font-semibold mt-2 text-neutral-100">
+            {{ user_count }}
+          </div>
+        </div>
+
+        <!-- Posts Card -->
+        <div
+          class="bg-neutral-900 border border-neutral-800 rounded p-4 flex flex-col justify-between min-w-0"
+        >
+          <div class="flex items-center gap-2 text-indigo-400">
+            <i class="fa-solid fa-file-lines text-sm"></i>
+            <span class="text-xs text-neutral-400 font-medium truncate"
+              >Posts</span
+            >
+          </div>
+          <div class="text-2xl font-semibold mt-2 text-neutral-100">
+            {{ post_count }}
+          </div>
+        </div>
+
+        <!-- Reported Users Card -->
+        <div
+          class="bg-neutral-900 border border-neutral-800 rounded p-4 flex flex-col justify-between min-w-0"
+        >
+          <div class="flex items-center gap-2 text-amber-500">
+            <i class="fa-solid fa-clock text-sm"></i>
+            <span class="text-xs text-neutral-400 font-medium truncate"
+              >Reported Users</span
+            >
+          </div>
+          <div class="text-2xl font-semibold mt-2 text-amber-400">
+            {{ user_reports or 0 }}
+          </div>
+        </div>
+
+        <!-- Flagged Content Card -->
+        <div
+          class="bg-neutral-900 border border-neutral-800 rounded p-4 flex flex-col justify-between min-w-0"
+        >
+          <div class="flex items-center gap-2 text-red-400">
+            <i class="fa-solid fa-triangle-exclamation text-sm"></i>
+            <span class="text-xs text-neutral-400 font-medium truncate"
+              >Flagged Content</span
+            >
+          </div>
+          <div class="text-2xl font-semibold mt-2 text-red-400">
+            {{ post_reports }}
+          </div>
+        </div>
+
+        <!-- Online Users Card (Brought into dark mode theme with green accents) -->
+        <div
+          class="bg-neutral-900 border border-neutral-800 rounded p-4 flex flex-col justify-between min-w-0 ring-1 ring-green-500/20"
+        >
+          <div class="flex items-center gap-2 text-green-400">
+            <i class="fa-solid fa-circle text-[8px] animate-pulse"></i>
+            <span class="text-xs text-neutral-400 font-medium truncate"
+              >Online Users</span
+            >
+          </div>
+          <div class="text-2xl font-semibold mt-2 text-green-400">
+            {{ online_count or 0 }}
+          </div>
+        </div>
+      </section>
+
+      <!-- WORK QUEUE · ACTION REQUIRED -->
+      <section class="bg-neutral-900 border border-neutral-800 rounded p-5">
+        <div class="flex items-center gap-2 mb-5">
+          <i class="fa-solid fa-list-check text-amber-400"></i>
+          <h2 class="text-sm font-semibold">Work Queue · Action Required</h2>
+        </div>
+
+        <div class="space-y-4 text-sm">
+          <!-- Pending Post Reports -->
+          <div class="bg-neutral-950 border border-neutral-800 rounded p-4">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-amber-400 font-semibold">
+                Pending Post Reports
+              </span>
+            </div>
+
+            {% if queue_pending_post_reports %}
+            <ul class="space-y-2 text-xs">
+              {% for report in queue_pending_post_reports %} {% set target =
+              report.get_target() %}
+              <li class="flex items-center justify-between gap-3">
+                <span class="text-neutral-300 truncate">
+                  {% if target %} {{ target.title }} {% else %} Deleted post {%
+                  endif %} · {{ report.reason }}
+                </span>
+
+                <a
+                  href="{{ url_for('resolve_report', report_id=report.id) }}"
+                  class="text-amber-400 hover:underline whitespace-nowrap"
+                >
+                  Review
+                </a>
+              </li>
+              {% endfor %}
+            </ul>
+            {% else %}
+            <div class="text-xs text-neutral-500">No pending post reports</div>
+            {% endif %}
+          </div>
+
+          <!-- Escalated Content -->
+          <div class="bg-neutral-950 border border-red-500/30 rounded p-4">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-red-400 font-semibold">
+                Escalated Content
+              </span>
+            </div>
+
+            {% if queue_flagged_post_reports %}
+            <ul class="space-y-2 text-xs">
+              {% for report in queue_flagged_post_reports %} {% set target =
+              report.get_target() %}
+              <li class="flex items-center justify-between gap-3">
+                <span class="text-neutral-300 truncate">
+                  {% if target %} {{ target.title }} {% else %} Deleted post {%
+                  endif %} · multiple reports
+                </span>
+
+                <a
+                  href="{{ url_for('resolve_report', report_id=report.id) }}"
+                  class="text-red-400 hover:underline whitespace-nowrap"
+                >
+                  Inspect
+                </a>
+              </li>
+              {% endfor %}
+            </ul>
+            {% else %}
+            <div class="text-xs text-neutral-500">No escalated content</div>
+            {% endif %}
+          </div>
+
+          <!-- User Reports -->
+          <div class="bg-neutral-950 border border-blue-500/30 rounded p-4">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-blue-400 font-semibold"> User Reports </span>
+            </div>
+
+            {% if queue_user_reports %}
+            <ul class="space-y-2 text-xs">
+              {% for report in queue_user_reports %} {% set target =
+              report.get_target() %}
+              <li class="flex items-center justify-between gap-3">
+                <span class="text-neutral-300 truncate">
+                  {% if target %} {{ target.username }} {% else %} Deleted user
+                  {% endif %} · {{ report.reason }}
+                </span>
+
+                <a
+                  href="{{ url_for('resolve_report', report_id=report.id) }}"
+                  class="text-blue-400 hover:underline whitespace-nowrap"
+                >
+                  Review
+                </a>
+              </li>
+              {% endfor %}
+            </ul>
+            {% else %}
+            <div class="text-xs text-neutral-500">No user reports pending</div>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+
+      <!-- ACTIVITY + ACTIONS -->
+      <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- ACTIVITY FEED -->
+        <div class="bg-neutral-900 border border-neutral-800 rounded p-5">
+          <div class="flex items-center gap-2 mb-4">
+            <i class="fa-solid fa-clock-rotate-left text-blue-400"></i>
+            <h2 class="text-sm font-semibold">Recent Activity</h2>
+          </div>
+
+          <div class="space-y-2 text-xs">
+            {% for log in latest_logs %}
+            <div
+              class="bg-neutral-950 border border-neutral-800 rounded px-3 py-2 flex items-start justify-between gap-3"
+            >
+              <!-- Left: Icon + message -->
+              <div class="flex items-start gap-2">
+                <!-- Action icon -->
+                {% if log.action == 'DELETE' %}
+                <i class="fa-solid fa-trash text-red-400 mt-[2px]"></i>
+                {% elif log.action == 'CREATE' %}
+                <i class="fa-solid fa-plus text-green-400 mt-[2px]"></i>
+                {% elif log.action == 'UPDATE' %}
+                <i class="fa-solid fa-pen text-blue-400 mt-[2px]"></i>
+                {% else %}
+                <i
+                  class="fa-solid fa-circle-info text-neutral-400 mt-[2px]"
+                ></i>
+                {% endif %}
+
+                <!-- Log text -->
+                <div class="leading-relaxed">
+                  <span class="font-medium text-neutral-200">
+                    {{ log.actor.username }}
+                  </span>
+                  <span class="text-neutral-400"> {{ log.action|lower }} </span>
+                  <span class="text-neutral-300"> {{ log.target_type }} </span>
+                  <span class="text-neutral-500"> #{{ log.target_id }} </span>
+                </div>
+              </div>
+
+              <!-- Right: Timestamp -->
+              <div class="text-[10px] text-neutral-500 whitespace-nowrap">
+                {{ log.created_at.strftime('%H:%M %d %b') }}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- QUICK ACTIONS -->
+        <div class="bg-neutral-900 border border-neutral-800 rounded p-5">
+          <div class="flex items-center gap-2 mb-4">
+            <i class="fa-solid fa-bolt text-purple-400"></i>
+            <h2 class="text-sm font-semibold">Quick Actions</h2>
+          </div>
+
+          <div class="space-y-3">
+            <a
+              href="{{ url_for('admin_users') }}"
+              class="block bg-neutral-950 border border-neutral-800 rounded p-3 hover:border-blue-500/40"
+            >
+              <i class="fa-solid fa-users mr-2 text-blue-400"></i>
+              Manage Users
+            </a>
+
+            <a
+              href="{{ url_for('admin_posts') }}"
+              class="block bg-neutral-950 border border-neutral-800 rounded p-3 hover:border-amber-500/40"
+            >
+              <i class="fa-solid fa-file-lines mr-2 text-amber-400"></i>
+              Moderate Posts
+            </a>
+
+            <a
+              href="{{ url_for('admin_categories') }}"
+              class="block bg-neutral-950 border border-neutral-800 rounded p-3 hover:border-emerald-500/40"
+            >
+              <i class="fa-solid fa-folder-tree mr-2 text-emerald-400"></i>
+              Manage Categories
+            </a>
+
+            <a
+              href="{{ url_for('audit_logs') }}"
+              class="block bg-neutral-950 border border-neutral-800 rounded p-3 hover:border-neutral-500/40"
+            >
+              <i class="fa-solid fa-clipboard-list mr-2 text-neutral-300"></i>
+              View Audit Logs
+            </a>
+
+            <a
+              href="{{ url_for('admin_upcoming') }}"
+              class="block bg-neutral-950 border border-neutral-800 rounded p-3 hover:border-amber-500/40"
+            >
+              <i class="fa-solid fa-gears mr-2 text-red-300"></i>
+              Upcoming Changes
+            </a>
+            <a
+              href="{{ url_for('admin_reports') }}"
+              class="block bg-neutral-950 border border-neutral-800 rounded p-3 hover:border-red-500"
+            >
+              <i class="fa-solid fa-triangle-exclamation mr-2 text-red-600"></i>
+              Manage Reports
+            </a>
+            <a
+              href="{{ url_for('admin_suggestions') }}"
+              class="block bg-neutral-950 border border-neutral-800 rounded p-3 hover:border-green-500"
+            >
+              <i class="fa-solid fa-lightbulb mr-2 text-green-600"></i>
+              Manage Suggestions
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

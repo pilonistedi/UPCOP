@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Log In · Critique</title>
+
+    <link rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='favicon.ico') }}">
+
+    <link rel="stylesheet" href="/static/output.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  </head>
+
+  <body class="bg-neutral-950 text-neutral-100 min-h-screen antialiased pt-14 flex items-center justify-center px-4">
+
+    <!-- Navbar -->
+    <header class="fixed top-0 inset-x-0 h-14 z-50 border-b border-neutral-900/60 bg-neutral-950/80 backdrop-blur">
+      <div class="max-w-5xl mx-auto px-4 h-full flex items-center justify-between">
+
+        <!-- Logo + Name -->
+        <a href="{{ url_for('feed') }}"
+           class="inline-flex items-center gap-2 hover:opacity-90 transition-opacity">
+
+          <img
+            src="{{ url_for('static', filename='images/logo.png') }}"
+            alt="Critique"
+            class="h-7 w-auto"
+          >
+
+          <span class="text-base font-extrabold text-neutral-100 tracking-tight">
+            Critique
+          </span>
+        </a>
+
+        <!-- Back Link -->
+        <a href="{{ url_for('feed') }}"
+           class="text-xs text-neutral-400 hover:text-neutral-200 transition-colors
+                  inline-flex items-center gap-1.5 font-medium group">
+
+          <i class="fa-solid fa-arrow-left text-[10px]
+                    transform group-hover:-translate-x-0.5 transition-transform"></i>
+
+          <span>Back to Feed</span>
+        </a>
+
+      </div>
+    </header>
+
+    <!-- Login Card -->
+    <div class="w-full max-w-sm bg-neutral-900 border border-neutral-800/80 rounded-xl p-6 shadow-2xl">
+
+      <div class="flex flex-col items-center mb-6">
+        <span class="text-xl font-extrabold text-neutral-100 tracking-tight mb-1">
+          Critique
+        </span>
+        <h1 class="text-sm text-neutral-400 font-medium">
+          Welcome back, creator
+        </h1>
+      </div>
+
+      <form method="post" class="space-y-4">
+
+        <!-- Identity -->
+        <div>
+          <label class="block text-xs font-medium text-neutral-400 mb-1.5">
+            Email or Username
+          </label>
+
+          <div class="relative">
+            <input
+              type="text"
+              name="login"
+              placeholder="creativestudio or you@example.com"
+              required
+              class="w-full bg-neutral-950 border border-neutral-800 rounded-lg pl-8.5 pr-3 py-2 text-xs text-neutral-100 placeholder-neutral-600 focus:outline-none focus:border-neutral-700 transition"
+            />
+
+            <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+              <i class="fa-regular fa-user text-neutral-600 text-[11px]"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label class="block text-xs font-medium text-neutral-400 mb-1.5">
+            Password
+          </label>
+
+          <div class="relative">
+            <input
+              type="password"
+              name="password"
+              placeholder="••••••••"
+              required
+              class="w-full bg-neutral-950 border border-neutral-800 rounded-lg pl-8.5 pr-3 py-2 text-xs text-neutral-100 placeholder-neutral-600 focus:outline-none focus:border-neutral-700 transition"
+            />
+
+            <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+              <i class="fa-solid fa-lock text-neutral-600 text-[10px]"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          class="w-full mt-2 inline-flex items-center justify-center gap-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-950 text-xs font-semibold py-2 rounded-lg transition-all shadow-sm"
+        >
+          <span>Log In</span>
+          <i class="fa-solid fa-right-to-bracket text-[10px]"></i>
+        </button>
+      </form>
+
+      <!-- Signup -->
+      <p class="text-xs text-neutral-500 text-center mt-5">
+        Don’t have an account?
+        <a href="{{ url_for('signup') }}"
+           class="text-neutral-300 hover:text-neutral-100 hover:underline transition-colors font-medium">
+          Sign up
+        </a>
+      </p>
+
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="mt-4 space-y-2">
+
+            {% for category, message in messages %}
+              <div class="px-3 py-2.5 text-xs rounded-lg flex items-center gap-2 border
+                {{ 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                   if category == 'error'
+                   else 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' }}">
+
+                {% if category == 'error' %}
+                  <i class="fa-solid fa-circle-exclamation text-[11px] shrink-0"></i>
+                {% else %}
+                  <i class="fa-solid fa-circle-check text-[11px] shrink-0"></i>
+                {% endif %}
+
+                <span>{{ message }}</span>
+              </div>
+            {% endfor %}
+
+          </div>
+        {% endif %}
+      {% endwith %}
+
+    </div>
+
+  </body>
+</html>

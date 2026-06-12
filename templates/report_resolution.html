@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Resolve Report</title>
+    <link rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='favicon.ico') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='output.css') }}"
+    />
+  </head>
+
+  <body
+    class="bg-neutral-950 text-neutral-200 min-h-screen flex justify-center py-10"
+  >
+    <div class="w-full max-w-3xl px-4">
+      <div
+        class="bg-neutral-900 border border-neutral-800 rounded-xl p-6 space-y-6"
+      >
+        <!-- Header -->
+        <div>
+          <h1 class="text-xl font-semibold">Report Review</h1>
+          <p class="text-sm text-neutral-400">
+            Status:
+            <span class="text-neutral-200 font-medium">
+              {{ report.status|capitalize }}
+            </span>
+          </p>
+        </div>
+
+        <!-- Report details -->
+        <div class="space-y-2 text-sm">
+          <p><strong>Reported by:</strong> {{ report.reporter.username }}</p>
+          <p>
+            <strong>Target type:</strong> {{ report.target_type|capitalize }}
+          </p>
+          <p><strong>Reason:</strong> {{ report.reason }}</p>
+          <p class="text-neutral-400">
+            {{ report.description or "No additional description provided." }}
+          </p>
+        </div>
+
+        <!-- Target preview -->
+        <div
+          class="bg-neutral-950 border border-neutral-800 rounded-md p-4 text-sm"
+        >
+          <p class="text-neutral-400 mb-1">Reported content</p>
+
+          {% if report.target_type == "post" %}
+          <p class="font-medium">{{ target.title }}</p>
+
+          {% elif report.target_type == "comment" %}
+          <p>{{ target.body }}</p>
+
+          {% elif report.target_type == "user" %}
+          <p>@{{ target.username }}</p>
+          {% endif %}
+        </div>
+
+        <!-- Resolution details (ONLY if not open) -->
+        {% if report.status != "open" %}
+        <div
+          class="bg-neutral-950 border border-neutral-800 rounded-md p-4 text-sm space-y-2"
+        >
+          <p class="text-neutral-400 mb-1">Resolution details</p>
+
+          <p>
+            <strong>Status:</strong>
+            {{ report.status|capitalize }}
+          </p>
+
+          <p>
+            <strong>Resolved by:</strong>
+            {{ report.resolved_by }}
+          </p>
+
+          <p>
+            <strong>Resolved at:</strong>
+            {{ report.resolved_at }}
+          </p>
+
+          {% if report.admin_note %}
+          <p>
+            <strong>Admin note:</strong>
+            <span class="text-neutral-300">{{ report.admin_note }}</span>
+          </p>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Resolution form (ONLY if open) -->
+        {% if report.status == "open" %}
+        <form method="post" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Admin note</label>
+            <textarea
+              name="admin_note"
+              rows="3"
+              class="w-full bg-neutral-950 border border-neutral-800 rounded-md px-3 py-2 text-sm resize-none"
+              placeholder="Internal note (not visible to users)"
+            >
+{{ report.admin_note or "" }}</textarea
+            >
+          </div>
+
+          <!-- Actions -->
+          <div class="grid grid-cols-2 gap-3">
+            <button
+              name="action"
+              value="resolve"
+              class="bg-green-600 hover:bg-green-700 py-2 rounded-md text-sm font-semibold"
+            >
+              Mark Resolved
+            </button>
+
+            <button
+              name="action"
+              value="reject"
+              class="bg-neutral-700 hover:bg-neutral-600 py-2 rounded-md text-sm font-semibold"
+            >
+              Reject Report
+            </button>
+
+            {% if report.target_type == "user" %}
+            <button
+              name="action"
+              value="ban_user"
+              class="bg-red-600 hover:bg-red-700 py-2 rounded-md text-sm font-semibold col-span-2"
+            >
+              Ban User
+            </button>
+            {% else %}
+            <button
+              name="action"
+              value="delete_content"
+              class="bg-red-600 hover:bg-red-700 py-2 rounded-md text-sm font-semibold col-span-2"
+            >
+              Delete {{ report.target_type|capitalize }}
+            </button>
+            {% endif %}
+          </div>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </body>
+</html>

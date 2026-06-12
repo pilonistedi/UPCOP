@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}Legal{% endblock %}</title>
+    <link rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='favicon.ico') }}">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='output.css') }}"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css"
+    />
+  </head>
+  <body class="bg-neutral-950 text-neutral-200">
+    <nav class="border-b border-neutral-800">
+      <div class="max-w-5xl mx-auto px-4 py-3 flex gap-6 text-sm">
+        <a href="/" class="font-semibold text-white">YourApp</a>
+        <a href="/rules" class="hover:text-white">Rules</a>
+        <a href="/terms" class="hover:text-white">User Agreement</a>
+        <a href="/privacy" class="hover:text-white">Privacy</a>
+        <a href="/accessibility" class="hover:text-white">Accessibility</a>
+      </div>
+    </nav>
+
+    <main class="max-w-3xl mx-auto px-4 py-10">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="border-t border-neutral-800 text-sm text-neutral-500">
+      <div class="max-w-5xl mx-auto px-4 py-6">
+        Critique, Inc. © 2026. All rights reserved.
+      </div>
+    </footer>
+  </body>
+</html>

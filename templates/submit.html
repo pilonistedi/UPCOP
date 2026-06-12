@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Submit Project · Critique</title>
+    <link rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='output.css') }}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  </head>
+  <body class="bg-neutral-950 text-neutral-100 antialiased min-h-screen">
+
+    <header class="bg-neutral-900/50 backdrop-blur-md border-b border-neutral-800/60 fixed inset-x-0 top-0 z-50">
+      <div class="max-w-5xl mx-auto h-14 px-4 sm:px-6 flex items-center justify-between">
+        <a href="{{ url_for('feed') }}"
+           class="flex items-center gap-2 hover:opacity-90 transition-opacity">
+
+          <img
+            src="{{ url_for('static', filename='images/logo.png') }}"
+            alt="Critique logo"
+            class="h-8 w-auto"
+          >
+
+          <span class="text-xl font-extrabold text-neutral-100 tracking-tight">
+            Critique
+          </span>
+        </a>
+        <a href="{{ url_for('feed') }}" class="text-xs text-neutral-400 hover:text-neutral-200 transition-colors inline-flex items-center gap-1.5 font-medium group">
+          <i class="fa-solid fa-arrow-left text-[10px] transform group-hover:-translate-x-0.5 transition-transform"></i>
+          <span>Back to Feed</span>
+        </a>
+      </div>
+    </header>
+
+    <main class="max-w-2xl mx-auto px-4 sm:px-6 pt-24 pb-20">
+      
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="mb-6 space-y-2">
+            {% for category, message in messages %}
+              <div class="px-4 py-3 text-xs rounded-lg flex items-center gap-2 border {{ 'bg-rose-500/10 border-rose-500/20 text-rose-400' if category == 'error' else 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' }}">
+                {% if category == 'error' %}
+                  <i class="fa-solid fa-circle-exclamation text-[11px] shrink-0"></i>
+                {% else %}
+                  <i class="fa-solid fa-circle-check text-[11px] shrink-0"></i>
+                {% endif %}
+                <span>{{ message }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% if not can_submit %}
+        <div class="mb-6 px-4 py-3.5 bg-amber-500/5 border border-amber-500/20 rounded-xl flex items-start gap-3 text-amber-400/90">
+          <i class="fa-solid fa-lock text-xs mt-0.5 shrink-0"></i>
+          <div class="flex flex-col gap-0.5">
+            <span class="text-xs font-bold text-neutral-200">Submission Track Locked</span>
+            <span class="text-[11px] leading-relaxed">
+              To ensure platform health, you must critique at least <strong>3 distinct project files</strong> built by peers before launching a fresh submission track here.
+            </span>
+          </div>
+        </div>
+      {% endif %}
+
+      <section class="bg-neutral-900 border border-neutral-800/80 rounded-xl p-6 sm:p-8 shadow-2xl {% if not can_submit %}opacity-80 pointer-events-none select-none{% endif %}">
+  
+        <header class="mb-5 border-b border-neutral-800/60 pb-4">
+          <div class="flex flex-col gap-1">
+            <h1 class="text-xl font-bold tracking-tight text-neutral-100">
+              Submit a project
+            </h1>
+            <p class="text-xs text-neutral-400 max-w-prose leading-relaxed">
+              Be clear about what you're building and the specific areas where you need a constructive critique.
+            </p>
+          </div>
+
+          <p class="mt-4 text-[11px] text-amber-400/90 flex items-start gap-1.5 leading-normal bg-amber-500/5 border border-amber-500/10 p-2.5 rounded-lg">
+            <i class="fa-solid fa-circle-exclamation text-[11px] mt-0.5 shrink-0"></i>
+            <span><strong>Note:</strong> Only check the project option below if you are establishing an entirely new repository tracking container. If you are updating an existing submission or creating a basic text post, skip it.</span>
+          </p>
+        </header>
+
+        <form
+          method="POST"
+          action="{{ url_for('submit_project') }}"
+          enctype="multipart/form-data"
+          class="space-y-5"
+        >
+          
+          <div class="pb-3 border-b border-neutral-800/40">
+            <label class="relative flex items-center gap-2.5 max-w-max {{ 'cursor-pointer select-none group' if can_submit else 'cursor-not-allowed opacity-50' }}">
+              <input 
+                type="checkbox" 
+                name="is_new_project" 
+                value="true"
+                class="peer sr-only"
+                {% if not can_submit %}disabled{% endif %}
+              />
+              <div class="w-4 h-4 bg-neutral-950 border border-neutral-800 rounded flex items-center justify-center text-neutral-950 text-[10px] transition peer-checked:bg-emerald-600 peer-checked:border-emerald-500 peer-checked:text-white {% if can_submit %}group-hover:border-neutral-700{% endif %}">
+                <i class="fa-solid fa-check scale-70 peer-checked:scale-100 transition-transform"></i>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-neutral-200 {% if can_submit %}group-hover:text-neutral-100{% endif %} transition-colors">
+                  Save this submission as a new project repository
+                </span>
+                <span class="text-[10px] text-neutral-500 mt-0.5">
+                  Uses your Project Title automatically as the repository identity.
+                </span>
+              </div>
+            </label>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-neutral-400 mb-1.5">
+                Project Title
+              </label>
+              <div class="relative">
+                <input
+                  type="text"
+                  name="title"
+                  required
+                  {% if not can_submit %}disabled class="w-full bg-neutral-950/40 border border-neutral-900/60 rounded-lg pl-8.5 pr-3 py-2 text-xs text-neutral-600 focus:outline-none cursor-not-allowed" {% else %} class="w-full bg-neutral-950 border border-neutral-800 rounded-lg pl-8.5 pr-3 py-2 text-xs text-neutral-100 placeholder-neutral-600 focus:outline-none focus:border-neutral-700 transition" {% endif %}
+                  placeholder="e.g., Early-stage SaaS landing page"
+                />
+                <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                  <i class="fa-solid fa-heading text-neutral-600 text-[10px]"></i>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-neutral-400 mb-1.5">
+                Category
+              </label>
+              <div class="relative">
+                <select
+                  name="category"
+                  required
+                  {% if not can_submit %}disabled class="w-full bg-neutral-950/40 border border-neutral-900/60 rounded-lg pl-8.5 pr-8 py-2 text-xs text-neutral-600 appearance-none focus:outline-none cursor-not-allowed" {% else %} class="w-full bg-neutral-950 border border-neutral-800 rounded-lg pl-8.5 pr-8 py-2 text-xs text-neutral-100 appearance-none focus:outline-none focus:border-neutral-700 transition cursor-pointer" {% endif %}
+                >
+                  <option value="" class="text-neutral-600">Select a category</option>
+                  {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                  {% endfor %}
+                </select>
+                <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                  <i class="fa-solid fa-layer-group text-neutral-600 text-[10px]"></i>
+                </div>
+                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-neutral-600">
+                  <i class="fa-solid fa-chevron-down text-[9px]"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-neutral-400 mb-1.5">
+              Link to Existing Project <span class="text-neutral-600 font-normal ml-0.5">(optional)</span>
+            </label>
+            <div class="relative">
+              <select
+                name="project_id"
+                {% if not can_submit %}disabled class="w-full bg-neutral-950/40 border border-neutral-900/60 rounded-lg pl-8.5 pr-8 py-2 text-xs text-neutral-600 appearance-none focus:outline-none cursor-not-allowed" {% else %} class="w-full bg-neutral-950 border border-neutral-800 rounded-lg pl-8.5 pr-8 py-2 text-xs text-neutral-100 appearance-none focus:outline-none focus:border-neutral-700 transition cursor-pointer" {% endif %}
+              >
+                <option value="" class="text-neutral-400">None — Post as a standalone project</option>
+                
+                {% if user_projects %}
+                  {% for project in user_projects %}
+                    <option value="{{ project.id }}">Update: {{ project.name }}</option>
+                  {% endfor %}
+                {% endif %}
+              </select>
+              <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                <i class="fa-solid fa-folder-plus text-neutral-600 text-[10px]"></i>
+              </div>
+              <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-neutral-600">
+                <i class="fa-solid fa-chevron-down text-[9px]"></i>
+              </div>
+            </div>
+            <p class="mt-1 text-[10px] text-neutral-500 leading-normal">
+              Select an existing dashboard option if this post represents a newer version iteration or phase update of work you've already launched here.
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-neutral-400 mb-1.5">
+              Project Link
+            </label>
+            <div class="relative">
+              <input
+                type="url"
+                name="link"
+                {% if not can_submit %}disabled class="w-full bg-neutral-950/40 border border-neutral-900/60 rounded-lg pl-8.5 pr-3 py-2 text-xs text-neutral-600 focus:outline-none cursor-not-allowed" {% else %} class="w-full bg-neutral-950 border border-neutral-800 rounded-lg pl-8.5 pr-3 py-2 text-xs text-neutral-100 placeholder-neutral-600 focus:outline-none focus:border-neutral-700 transition" {% endif %}
+                placeholder="https://yourdesign.com or github.com/username/repo"
+              />
+              <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                <i class="fa-solid fa-link text-neutral-600 text-[10px]"></i>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-neutral-400 mb-1.5">
+              Project Image <span class="text-neutral-600 font-normal ml-0.5">(optional)</span>
+            </label>
+
+            <img
+              id="imagePreview"
+              class="hidden max-h-40 object-cover w-full mb-3 rounded-lg border border-neutral-800 shadow-inner"
+              alt="Image preview"
+            />
+
+            <div
+              id="dropzone"
+              {% if not can_submit %} class="flex flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-neutral-900 bg-neutral-950/30 px-4 py-5 text-center cursor-not-allowed opacity-50" {% else %} class="flex flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-neutral-800 bg-neutral-950 px-4 py-5 text-center cursor-pointer hover:border-neutral-700 hover:bg-neutral-900/40 transition group" {% endif %}
+            >
+              <i class="fa-regular fa-image text-neutral-600 text-base {% if can_submit %}group-hover:text-neutral-400{% endif %} transition-colors"></i>
+              <div class="text-xs text-neutral-400">
+                <span class="font-medium text-neutral-300 {% if can_submit %}group-hover:text-neutral-200{% endif %}">Drag & drop image</span> or click to upload
+              </div>
+              <span class="text-[10px] text-neutral-600 tracking-wider uppercase">PNG, JPG, WEBP</span>
+
+              <input
+                id="fileInput"
+                type="file"
+                name="image"
+                accept="image/*"
+                class="hidden"
+                {% if not can_submit %}disabled{% endif %}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-neutral-400 mb-1.5">
+              Context
+            </label>
+            <textarea
+              name="context"
+              rows="4"
+              required
+              placeholder="What is this project? Who is it for? What problem does it solve for target audiences?"
+              {% if not can_submit %}disabled class="w-full bg-neutral-950/40 border border-neutral-900/60 rounded-lg p-3 text-xs text-neutral-600 resize-none focus:outline-none cursor-not-allowed leading-relaxed" {% else %} class="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-xs text-neutral-100 placeholder-neutral-600 resize-none focus:outline-none focus:border-neutral-700 transition leading-relaxed" {% endif %}
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-neutral-400 mb-1.5">
+              Feedback you're looking for
+            </label>
+            <textarea
+              name="feedback"
+              rows="4"
+              required
+              placeholder="e.g., Clarity of value proposition, UI component layout, typography choices, color contrast ratios…"
+              {% if not can_submit %}disabled class="w-full bg-neutral-950/40 border border-neutral-900/60 rounded-lg p-3 text-xs text-neutral-600 resize-none focus:outline-none cursor-not-allowed leading-relaxed" {% else %} class="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-xs text-neutral-100 placeholder-neutral-600 resize-none focus:outline-none focus:border-neutral-700 transition leading-relaxed" {% endif %}
+            ></textarea>
+          </div>
+
+          <div class="pt-4 border-t border-neutral-800/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <p class="text-[11px] text-neutral-600 flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-info text-[10px]"></i>
+              <span>Clear context results in higher-quality peer critiques.</span>
+            </p>
+
+            <div class="flex items-center justify-end gap-3 shrink-0">
+              <a 
+                href="{{ url_for('feed') }}"
+                class="px-4 py-2 rounded-lg border border-neutral-800 text-xs font-medium text-neutral-400 hover:text-neutral-200 hover:border-neutral-700 hover:bg-neutral-900/50 transition-all text-center min-w-[80px]"
+              >
+                Discard
+              </a>
+
+              <button
+                type="submit"
+                {% if not can_submit %}
+                  disabled
+                  class="px-4 py-2 rounded-lg bg-neutral-800 border border-neutral-700/60 text-neutral-500 text-xs font-semibold cursor-not-allowed flex items-center justify-center gap-1.5 min-w-[120px]"
+                {% else %}
+                  class="px-4 py-2 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-950 text-xs font-semibold transition-all shadow-sm flex items-center justify-center gap-1.5 min-w-[120px]"
+                {% endif %}
+              >
+                {% if can_submit %}
+                  <span>Submit Project</span>
+                  <i class="fa-solid fa-paper-plane text-[9px]"></i>
+                {% else %}
+                  <span>Locked</span>
+                  <i class="fa-solid fa-lock text-[9px]"></i>
+                {% endif %}
+              </button>
+            </div>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    {% if can_submit %}
+      <script src="{{ url_for('static', filename='js/submit.js') }}"></script>
+    {% endif %}
+  </body>
+</html>
